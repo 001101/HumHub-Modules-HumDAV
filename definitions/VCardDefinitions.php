@@ -93,7 +93,7 @@ class VCardDefinitions {
         return $vCard;
     }
 
-    public static function getVCardDefinition(User $user, int $addressBookId) {
+    public static function getVCardDefinition(User $user, $addressBookId) {
         $vCard = self::getVCard($user);
         return [
             'id' => $user->id,

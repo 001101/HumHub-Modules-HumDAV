@@ -11,10 +11,18 @@ namespace humhub\modules\humdav\components\sabre;
 use Sabre\Uri;
 use Sabre\DAV\PropPatch;
 use Sabre\DAVACL\PrincipalBackend\AbstractBackend;
-use humhub\modules\humdav\definitions\PrincipalDefinitions;
 use humhub\modules\user\models\User;
 
 class PrincipalBackend extends AbstractBackend {
+    private static function getUserPrincipal(User $user) {
+        return [
+            'id' => $user->id,
+			'uri' => 'principals/' . $user->username,
+            '{DAV:}displayname' => $user->displayName,
+            '{http://sabredav.org/ns}email-address' => $user->email
+        ];
+    }
+
     /**
      * @inheritdoc
      */
@@ -23,7 +31,7 @@ class PrincipalBackend extends AbstractBackend {
 
         if ($prefixPath === 'principals') {
             foreach (User::findAll(['user.status' => User::STATUS_ENABLED]) as $user) {
-                $results[] = PrincipalDefinitions::getUserPrincipal($user);
+                $results[] = self::getUserPrincipal($user);
             }
         }
 
@@ -39,18 +47,26 @@ class PrincipalBackend extends AbstractBackend {
         if ($prefix === 'principals') {
             $user = User::findOne(['username' => $name]);
             if ($user !== null) {
-				return PrincipalDefinitions::getUserPrincipal($user);
+				return self::getUserPrincipal($user);
             }
         }
 
         return null;
     }
-
+    
     /**
      * @inheritdoc
      */
     public function updatePrincipal($path, PropPatch $propPatch) {
-        return 0;
+        $response = [
+            403 => []
+        ];
+        
+        foreach($propPatch as $key=>$value) {
+            $response[403][$key] = null;
+        }
+        
+        return $response;
     }
 
     /**
@@ -78,6 +94,6 @@ class PrincipalBackend extends AbstractBackend {
      * @inheritdoc
      */
     public function setGroupMemberSet($principal, array $members) {
-        return;
+        return false;
     }
 }

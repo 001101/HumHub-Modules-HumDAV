@@ -29,11 +29,11 @@ class RemoteController extends Controller {
         if ((boolean)$settings->get('active', false) !== true) {
             throw new NotFoundHttpException('Module not activated');
         }
-
+        
         Yii::$app->response->format = Response::FORMAT_RAW;
         $this->layout = false;
         
-        return parent::beforeAction($action);
+        return true;
     }
 
     public function actionIndex() {

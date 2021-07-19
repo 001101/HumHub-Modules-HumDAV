@@ -8,10 +8,17 @@
 
 use humhub\modules\humdav\components\UUIDHelper;
 use yii\web\ForbiddenHttpException;
+use yii\web\BadRequestHttpException;
+use yii\helpers\Url;
 
 $currentIdentity = Yii::$app->user->identity;
 if ($currentIdentity === null) {
 	throw new ForbiddenHttpException('You\'re not signed in.');
+}
+
+$targetDevice = Yii::$app->request->get('target');
+if (!in_array($targetDevice, ['ios', 'osx'])) {
+	throw new BadRequestHttpException('"'.$targetDevice.'" is not a supported target.');
 }
 
 $secureRequests = Yii::$app->request->getIsSecureConnection() ? 'true': 'false';
@@ -30,7 +37,7 @@ $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 			<key>CardDAVPort</key>
 			<integer>'.Yii::$app->request->getServerPort().'</integer>
 			<key>CardDAVPrincipalURL</key>
-			<string>/humdav/remote/addressbooks/'.$currentIdentity->username.'/</string>
+			<string>'.Url::to('/humdav/remote/addressbooks/'.$currentIdentity->username.'/', $targetDevice === 'ios').'</string>
 			<key>CardDAVUseSSL</key>
             <'.$secureRequests.'/>
             <key>CardDAVUsername</key>

@@ -46,7 +46,7 @@ class AuthenticationBackend implements BackendInterface {
         die;
     }
 
-    public static function getUserByCredentials($username, $password) {
+    private static function getUserByCredentials($username, $password) {
         $login = new Login;
         if (!$login->load(['username' => $username, 'password' => $password], '') || !$login->validate()) {
             return null;

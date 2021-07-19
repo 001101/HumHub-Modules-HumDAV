@@ -26,7 +26,7 @@ class AdminController extends Controller {
         }
 
         $versionInfos = [
-            'local_version' => Yii::$app->getModule('usermap')->version,
+            'local_version' => Yii::$app->getModule('humdav')->version,
             'github_version' => $this->getGitHubVersion()
         ];
 

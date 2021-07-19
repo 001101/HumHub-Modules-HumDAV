@@ -12,6 +12,8 @@ use Sabre\DAV\Server;
 use humhub\modules\humdav\components\sabre\PrincipalBackend;
 use humhub\modules\humdav\components\sabre\CardDavBackend;
 use humhub\modules\humdav\components\sabre\AuthenticationBackend;
+use humhub\modules\humdav\models\sabre\AddressBookRoot;
+use humhub\modules\humdav\models\sabre\PrincipalCollection;
 
 $settings = Yii::$app->getModule('humdav')->settings;
 
@@ -22,8 +24,8 @@ $authBackend = new AuthenticationBackend();
 
 // Setting up the directory tree
 $nodes = [
-    new Sabre\DAVACL\PrincipalCollection($principalBackend),
-    new Sabre\CardDAV\AddressBookRoot($principalBackend, $cardDavBackend),
+    new PrincipalCollection($principalBackend),
+    new AddressBookRoot($principalBackend, $cardDavBackend),
 ];
 
 

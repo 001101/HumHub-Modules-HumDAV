@@ -16,6 +16,7 @@ use humhub\modules\user\models\User;
 use humhub\modules\user\models\Follow;
 use humhub\modules\space\models\Space;
 use humhub\modules\space\models\Membership;
+use Sabre\CardDAV\Plugin;
 
 class CardDavBackend extends AbstractBackend {
     /**
@@ -34,14 +35,14 @@ class CardDavBackend extends AbstractBackend {
                 'uri' => 'allusers',
                 'principaluri' => $principalUri,
                 '{DAV:}displayname' => 'All Users',
-                '{urn:ietf:params:xml:ns:carddav}addressbook-description' => 'All Users from "'.Yii::$app->settings->get('name').'"'
+                '{'.Plugin::NS_CARDDAV.'}addressbook-description' => 'All Users from "'.Yii::$app->settings->get('name').'"'
             ],
             [
                 'id' => '1',
                 'uri' => 'following',
                 'principaluri' => $principalUri,
                 '{DAV:}displayname' => 'Following',
-                '{urn:ietf:params:xml:ns:carddav}addressbook-description' => 'All users you are following'
+                '{'.Plugin::NS_CARDDAV.'}addressbook-description' => 'All users you are following'
             ]
         ];
 
@@ -51,7 +52,7 @@ class CardDavBackend extends AbstractBackend {
                 'uri' => 'space_'.$space->url,
                 'principaluri' => $principalUri,
                 '{DAV:}displayname' => $space->getDisplayName(),
-                '{urn:ietf:params:xml:ns:carddav}addressbook-description' => $space->getDisplayNameSub()
+                '{'.Plugin::NS_CARDDAV.'}addressbook-description' => $space->getDisplayNameSub()
             ];
         }
         

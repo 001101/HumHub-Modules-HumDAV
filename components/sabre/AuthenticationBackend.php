@@ -9,11 +9,9 @@
 namespace humhub\modules\humdav\components\sabre;
 
 use Yii;
-use yii\web\ForbiddenHttpException;
 use Sabre\DAV\Auth\Backend\BackendInterface;
 use Sabre\HTTP\RequestInterface;
 use Sabre\HTTP\ResponseInterface;
-use humhub\modules\user\models\User;
 use humhub\modules\user\models\forms\Login;
 use humhub\modules\user\authclient\AuthClientHelpers;
 

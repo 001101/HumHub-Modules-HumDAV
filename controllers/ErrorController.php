@@ -8,7 +8,6 @@
 
 namespace humhub\modules\humdav\controllers;
 
-use Yii;
 use yii\web\NotFoundHttpException;
 use humhub\components\Controller;
 

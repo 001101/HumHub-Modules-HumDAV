@@ -8,11 +8,14 @@
 
 namespace humhub\modules\humdav\models\admin;
 
+use humhub\modules\humdav\controllers\AdminController;
 use Yii;
 use yii\base\Model;
 
 class EditForm extends Model {
     public $active;
+    public $instruction_location;
+    public $instruction_location_sort_order;
     public $enabled_users;
     public $include_address;
     public $include_profile_image;
@@ -21,14 +24,18 @@ class EditForm extends Model {
     public $include_phone_numbers;
     public $include_url;
     public $enable_browser_plugin;
+    public $enable_auto_discovery;
 
     /**
      * @inheritdocs
      */
     public function rules() {
         return [
+            [['instruction_location'], 'in', 'range' => array_keys(static::getWidgetLocations())],
+            [['instruction_location_sort_order'], 'number', 'min' => 0],
             [['active', 'enabled_users'], 'safe'],
-            [['include_address', 'include_profile_image', 'include_birthday', 'include_gender', 'include_phone_numbers', 'include_url', 'enable_browser_plugin'], 'boolean'],
+            [['include_address', 'include_profile_image', 'include_birthday', 'include_gender', 'include_phone_numbers', 'include_url', 'enable_browser_plugin', 'enable_auto_discovery'], 'boolean'],
+            [['instruction_location_sort_order'], 'required']
         ];
     }
 
@@ -38,6 +45,9 @@ class EditForm extends Model {
     public function init() {
         $settings = Yii::$app->getModule('humdav')->settings;
         $this->active = $settings->get('active', false);
+
+        $this->instruction_location = $settings->get('instruction_location');
+        $this->instruction_location_sort_order = $settings->get('instruction_location_sort_order', 400);
 
         $this->enabled_users = (array)$settings->getSerialized('enabled_users');
 
@@ -49,6 +59,8 @@ class EditForm extends Model {
         $this->include_url = $settings->get('include_url', true);
 
         $this->enable_browser_plugin = $settings->get('enable_browser_plugin', false);
+
+        $this->enable_auto_discovery = AdminController::getAutoDiscoveryStatus();
     }
 
     /**
@@ -65,9 +77,21 @@ class EditForm extends Model {
      * @inheritdoc
      */
     public function attributeHints() {
-        return [
+        $result = [
             'enabled_users' => 'If empty, all users have access.'
         ];
+
+        if (AdminController::autoDiscoveryAvailable()) {
+            $result['enable_auto_discovery'] = '<b>IMPORTANT</b>: Please watch out for unexpected changes to the .htaccess file after an HumHub update. If errors occur, the current .htaccess file must be replaced with the <a href="https://github.com/humhub/humhub/blob/master/.htaccess.dist" target="_blank" ref="noopener noreferrer">current one from the official repo</a>.';
+        }
+        else if (!AdminController::autoDiscoveryReadable()) {
+            $result['enable_auto_discovery'] = 'The .htaccess file cannot be read. The current auto discovery status is unknown.';
+        }
+        else if (!AdminController::autoDiscoveryWriteable()) {
+            $result['enable_auto_discovery'] = 'The .htaccess file unfortunately can not be changed.';
+        }
+
+        return $result;
     }
 
     /**
@@ -76,6 +100,9 @@ class EditForm extends Model {
     public function save() {
         $settings = Yii::$app->getModule('humdav')->settings;
         $settings->set('active', (boolean) $this->active);
+
+        $settings->set('instruction_location', $this->instruction_location);
+        $settings->set('instruction_location_sort_order', $this->instruction_location_sort_order);
 
         $settings->setSerialized('enabled_users', (array)$this->enabled_users);
 
@@ -88,6 +115,21 @@ class EditForm extends Model {
 
         $settings->set('enable_browser_plugin', (boolean) $this->enable_browser_plugin);
 
+        AdminController::setAutoDiscoveryStatus((boolean) $this->enable_auto_discovery);
+
         return true;
+    }
+
+    public static function getWidgetLocations() {
+        $result = [
+            'dont_show' => 'Don\'t show (The module will work anyway)',
+            'top_menu' => 'Top menu'
+        ];
+
+        if (version_compare(Yii::$app->version, '1.9.0', 'lt')) {
+            $result['directory_menu'] = 'Directory menu (Not available as of HumHub version 1.9)';
+        }
+
+        return $result;
     }
 }

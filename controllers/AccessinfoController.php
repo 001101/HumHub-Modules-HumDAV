@@ -6,20 +6,21 @@
  * @author KeudellCoding
  */
 
-namespace humhub\modules\humdav\components;
+namespace humhub\modules\humdav\controllers;
 
 use Yii;
+use humhub\components\Controller;
+use humhub\components\Response;
 use yii\web\NotFoundHttpException;
 use yii\web\ForbiddenHttpException;
-use humhub\components\Controller;
 
-abstract class SecurityZoneController extends Controller {
+class AccessinfoController extends Controller {
     /**
      * @inheritdoc
      */
     public function beforeAction($action) {
         $currentIdentity = Yii::$app->user->identity;
-        if ($currentIdentity === null) {
+        if ($currentIdentity === null || Yii::$app->user->isGuest) {
             throw new ForbiddenHttpException('You\'re not signed in.');
         }
         
@@ -36,7 +37,18 @@ abstract class SecurityZoneController extends Controller {
         return parent::beforeAction($action);
     }
 
+    public function actionIndex() {
+        $settings = Yii::$app->getModule('humdav')->settings;
+
+        return $this->render('index', [
+            'instructionLocation' => $settings->get('instruction_location')
+        ]);
+    }
+
     public function actionMobileconfig() {
-        throw new ForbiddenHttpException('You\'re wrong!');
+        Yii::$app->response->format = Response::FORMAT_RAW;
+        $this->layout = false;
+        
+        return $this->render('mobileconfig');
     }
 }

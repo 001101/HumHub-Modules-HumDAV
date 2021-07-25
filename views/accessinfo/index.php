@@ -7,7 +7,6 @@
  */
 
 use yii\helpers\Url;
-use humhub\widgets\AjaxButton;
 use humhub\modules\directory\widgets\Menu;
 
 \humhub\assets\JqueryKnobAsset::register($this);
@@ -15,22 +14,25 @@ use humhub\modules\directory\widgets\Menu;
 
 <div class="container">
     <div class="row">
-        <div class="col-md-2">
-            <?= Menu::widget(); ?>
-        </div>
-        <div class="col-md-10">
-            <div class="panel panel-default">
-                <div class="panel-heading"><strong>HumDAV</strong> Access Infos</div>
+        <?php if ($instructionLocation === 'directory_menu') { ?>
+            <div class="col-md-2">
+                <?= Menu::widget(); ?>
+            </div>
+        <?php } ?>
+
+        <div class="<?= $instructionLocation === 'directory_menu' ? 'col-md-10' : 'col-md-12' ?>">
+            <div class="panel">
+                <div class="panel-heading"><i class="fa far fa-address-card"></i> <span><strong>HumDAV</strong> Access Infos</span></div>
                 <div class="panel-body">
                     <p>
-                        If you visit this page with an iPad or iPhone, you can download an automatically generated configuration file here:
+                        If you visit this page with iOS or macOS, you can download an automatically generated configuration file here:
                         <br>
-                        <a class="btn btn-default" href="<?= Url::to(['/humdav/generate/mobileconfig', 'target' => 'ios']); ?>" target="_blank">Download iOS Configuration File</a>
-                        <a class="btn btn-default" href="<?= Url::to(['/humdav/generate/mobileconfig', 'target' => 'osx']); ?>" target="_blank">Download macOS Configuration File</a>
+                        <a class="btn btn-default" href="<?= Url::to(['/humdav/accessinfo/mobileconfig', 'target' => 'ios']); ?>" target="_blank">Download iOS Configuration File</a>
+                        <a class="btn btn-default" href="<?= Url::to(['/humdav/accessinfo/mobileconfig', 'target' => 'osx']); ?>" target="_blank">Download macOS Configuration File</a>
                     </p>
                     <hr>
                     <p>
-                        Otherwise you can enter the following configuration into your device:
+                        Otherwise you can enter the following configuration into your device (<a href="https://wiki.davical.org/index.php/CardDAV_Clients" target="_blank" rel="noopener noreferrer">List with some CardDAV clients</a>):
                         <dl>
                             <dt>Type:</dt>
                             <dd>CardDAV</dd>

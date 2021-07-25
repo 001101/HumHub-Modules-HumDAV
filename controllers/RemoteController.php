@@ -13,8 +13,6 @@ use yii\web\NotFoundHttpException;
 use humhub\components\Response;
 use humhub\components\Controller;
 
-// Not a SecurityZoneController, because the "not allowed" cases
-// are handled by the AuthenticationBackend class.
 class RemoteController extends Controller {
     /**
      * @inheritdoc

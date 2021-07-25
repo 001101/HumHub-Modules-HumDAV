@@ -10,7 +10,6 @@ namespace humhub\modules\humdav;
 
 use Yii;
 use yii\helpers\Url;
-use yii\web\JsonParser;
 
 class Module extends \humhub\components\Module {
     /**

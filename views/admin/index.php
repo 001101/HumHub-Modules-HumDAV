@@ -10,6 +10,7 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use humhub\widgets\ActiveForm;
 use humhub\modules\user\widgets\UserPickerField;
+use humhub\modules\humdav\models\admin\EditForm;
 
 ?>
 
@@ -23,6 +24,11 @@ use humhub\modules\user\widgets\UserPickerField;
         
         <hr />
 
+        <?= $form->field($model, 'instruction_location')->dropDownList(EditForm::getWidgetLocations()); ?>
+        <?= $form->field($model, 'instruction_location_sort_order')->input('number', ['min' => 0]); ?>
+
+        <hr />
+        
         <?= $form->field($model, 'enabled_users')->widget(UserPickerField::class); ?>
 
         <hr />
@@ -37,6 +43,7 @@ use humhub\modules\user\widgets\UserPickerField;
         <hr />
 
         <?= $form->field($model, 'enable_browser_plugin')->checkbox(); ?>
+        <?= $form->field($model, 'enable_auto_discovery')->checkbox(['disabled' => $auto_discovery_available !== true]); ?>
 
         <hr />
 

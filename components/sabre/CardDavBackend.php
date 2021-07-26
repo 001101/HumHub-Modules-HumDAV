@@ -11,19 +11,19 @@ namespace humhub\modules\humdav\components\sabre;
 use Yii;
 use Sabre\DAV\PropPatch;
 use Sabre\CardDAV\Backend\AbstractBackend;
+use Sabre\CardDAV\Plugin;
 use humhub\modules\humdav\definitions\VCardDefinitions;
 use humhub\modules\user\models\User;
 use humhub\modules\user\models\Follow;
 use humhub\modules\space\models\Space;
 use humhub\modules\space\models\Membership;
-use Sabre\CardDAV\Plugin;
 
 class CardDavBackend extends AbstractBackend {
     /**
      * @inheritdoc
      */
     public function getAddressBooksForUser($principalUri) {
-        list($username) = Yii::$app->request->getAuthCredentials();
+        $username = Yii::$app->request->getAuthUser();
         $currentUser = User::findOne(['username' => $username]);
         if ($currentUser === null) {
             return [];
@@ -46,14 +46,17 @@ class CardDavBackend extends AbstractBackend {
             ]
         ];
 
-        foreach (Membership::getUserSpaces($currentUser->id) as $space) {
-            $results[] = [
-                'id' => 'space_'.$space->id,
-                'uri' => 'space_'.$space->url,
-                'principaluri' => $principalUri,
-                '{DAV:}displayname' => $space->getDisplayName(),
-                '{'.Plugin::NS_CARDDAV.'}addressbook-description' => $space->getDisplayNameSub()
-            ];
+        $settings = Yii::$app->getModule('humdav')->settings;
+        if ($settings->get('enable_space_addressbooks', true)) {
+            foreach (Membership::getUserSpaces($currentUser->id) as $space) {
+                $results[] = [
+                    'id' => 'space_'.$space->id,
+                    'uri' => 'space_'.$space->url,
+                    'principaluri' => $principalUri,
+                    '{DAV:}displayname' => $space->getDisplayName(),
+                    '{'.Plugin::NS_CARDDAV.'}addressbook-description' => $space->getDisplayNameSub()
+                ];
+            }
         }
         
         return $results;
@@ -87,11 +90,13 @@ class CardDavBackend extends AbstractBackend {
         $results = [];
         $usersForCards = [];
 
-        list($username) = Yii::$app->request->getAuthCredentials();
+        $username = Yii::$app->request->getAuthUser();
         $currentUser = User::findOne(['username' => $username]);
         if ($currentUser === null) {
             return [];
         }
+
+        $settings = Yii::$app->getModule('humdav')->settings;
 
         if ($addressBookId === '0') {
             $usersForCards = $this->getAllUsers();
@@ -99,7 +104,7 @@ class CardDavBackend extends AbstractBackend {
         else if ($addressBookId === '1') {
             $usersForCards = $this->getFollowingUsers($currentUser);
         }
-        else if (str_starts_with($addressBookId, 'space_')) {
+        else if (str_starts_with($addressBookId, 'space_') && $settings->get('enable_space_addressbooks', true)) {
             $usersForCards = $this->getSpaceUsers(substr($addressBookId, strpos($addressBookId, '_') + 1), $currentUser);
         }
 

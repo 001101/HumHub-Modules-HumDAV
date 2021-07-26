@@ -42,6 +42,10 @@ use humhub\modules\humdav\models\admin\EditForm;
 
         <hr />
 
+        <?= $form->field($model, 'enable_space_addressbooks')->checkbox(); ?>
+
+        <hr />
+
         <?= $form->field($model, 'enable_browser_plugin')->checkbox(); ?>
         <?= $form->field($model, 'enable_auto_discovery')->checkbox(['disabled' => $auto_discovery_available !== true]); ?>
 

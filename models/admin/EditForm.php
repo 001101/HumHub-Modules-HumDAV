@@ -23,6 +23,7 @@ class EditForm extends Model {
     public $include_gender;
     public $include_phone_numbers;
     public $include_url;
+    public $enable_space_addressbooks;
     public $enable_browser_plugin;
     public $enable_auto_discovery;
 
@@ -34,7 +35,7 @@ class EditForm extends Model {
             [['instruction_location'], 'in', 'range' => array_keys(static::getWidgetLocations())],
             [['instruction_location_sort_order'], 'number', 'min' => 0],
             [['active', 'enabled_users'], 'safe'],
-            [['include_address', 'include_profile_image', 'include_birthday', 'include_gender', 'include_phone_numbers', 'include_url', 'enable_browser_plugin', 'enable_auto_discovery'], 'boolean'],
+            [['include_address', 'include_profile_image', 'include_birthday', 'include_gender', 'include_phone_numbers', 'include_url', 'enable_space_addressbooks', 'enable_browser_plugin', 'enable_auto_discovery'], 'boolean'],
             [['instruction_location_sort_order'], 'required']
         ];
     }
@@ -58,8 +59,9 @@ class EditForm extends Model {
         $this->include_phone_numbers = $settings->get('include_phone_numbers', true);
         $this->include_url = $settings->get('include_url', true);
 
+        $this->enable_space_addressbooks = $settings->get('enable_space_addressbooks', true);
+        
         $this->enable_browser_plugin = $settings->get('enable_browser_plugin', false);
-
         $this->enable_auto_discovery = AdminController::getAutoDiscoveryStatus();
     }
 
@@ -113,8 +115,9 @@ class EditForm extends Model {
         $settings->set('include_phone_numbers', (boolean) $this->include_phone_numbers);
         $settings->set('include_url', (boolean) $this->include_url);
 
+        $settings->set('enable_space_addressbooks', (boolean) $this->enable_space_addressbooks);
+        
         $settings->set('enable_browser_plugin', (boolean) $this->enable_browser_plugin);
-
         AdminController::setAutoDiscoveryStatus((boolean) $this->enable_auto_discovery);
 
         return true;

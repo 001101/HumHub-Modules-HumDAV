@@ -10,17 +10,15 @@ namespace humhub\modules\humdav\components\sabre;
 
 use Sabre\DAV\Auth\Backend\AbstractBasic;
 use humhub\modules\user\models\forms\Login;
-use humhub\modules\user\authclient\AuthClientHelpers;
 
 class AuthenticationBackend extends AbstractBasic {
     protected function validateUserPass($username, $password) {
         $login = new Login;
         if (!$login->load(['username' => $username, 'password' => $password], '') || !$login->validate()) {
-            return null;
+            return false;
         }
-
-        $user = AuthClientHelpers::getUserByAuthClient($login->authClient);
-        return $user;
+        
+        return true;
     }
 }
 

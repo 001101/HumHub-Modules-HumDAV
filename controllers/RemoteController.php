@@ -8,10 +8,20 @@
 
 namespace humhub\modules\humdav\controllers;
 
+require_once __DIR__.'/../vendor/autoload.php';
+
 use Yii;
-use yii\web\NotFoundHttpException;
 use humhub\components\Response;
 use humhub\components\Controller;
+use humhub\components\access\ControllerAccess;
+use humhub\modules\humdav\components\sabre\PrincipalBackend;
+use humhub\modules\humdav\components\sabre\CardDavBackend;
+use humhub\modules\humdav\components\sabre\AuthenticationBackend;
+use humhub\modules\humdav\models\sabre\AddressBookRoot;
+use humhub\modules\humdav\models\sabre\PrincipalCollection;
+use yii\web\HttpException;
+use Sabre\DAV\Server;
+
 
 class RemoteController extends Controller {
     /**
@@ -20,21 +30,65 @@ class RemoteController extends Controller {
     public $enableCsrfValidation = false;
 
     /**
+     * @inerhitdoc
+     * Do not enforce authentication.
+     */
+    public $access = ControllerAccess::class;
+
+    /**
      * @inheritdoc
      */
     public function beforeAction($action) {
+        Yii::$app->response->clear();
+        Yii::$app->response->format = Response::FORMAT_RAW;
+        Yii::$app->request->setBodyParams(null);
+        
         $settings = Yii::$app->getModule('humdav')->settings;
         if ((boolean)$settings->get('active', false) !== true) {
-            throw new NotFoundHttpException('Module not activated');
+            throw new HttpException(403, 'Module not activated');
         }
-        
-        Yii::$app->response->format = Response::FORMAT_RAW;
-        $this->layout = false;
         
         return true;
     }
 
     public function actionIndex() {
-        return $this->render('index');
+        $settings = Yii::$app->getModule('humdav')->settings;
+
+        //Backends
+        $principalBackend = new PrincipalBackend();
+        $cardDavBackend = new CardDavBackend();
+        $authBackend = new AuthenticationBackend();
+
+        // Setting up the directory tree
+        $nodes = [
+            new PrincipalCollection($principalBackend),
+            new AddressBookRoot($principalBackend, $cardDavBackend),
+        ];
+
+
+        // The object tree needs in turn to be passed to the server class
+        $server = new Server($nodes);
+        $server->setBaseUri('/humdav/remote');
+
+
+        // Plugins
+        $server->addPlugin(new \Sabre\DAV\Auth\Plugin($authBackend));
+
+        $aclPlugin = new \Sabre\DAVACL\Plugin();
+        $aclPlugin->allowUnauthenticatedAccess = false;
+        $aclPlugin->hideNodesFromListings = true;
+        $server->addPlugin($aclPlugin);
+
+        $server->addPlugin(new \Sabre\CardDAV\Plugin());
+
+        if ((boolean)$settings->get('enable_browser_plugin', false) === true) {
+            $server->addPlugin(new \Sabre\DAV\Browser\Plugin());
+        }
+
+
+        // And off we go!
+        $server->exec();
+
+        exit(0);
     }
 }

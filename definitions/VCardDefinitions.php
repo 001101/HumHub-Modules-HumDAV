@@ -97,7 +97,7 @@ class VCardDefinitions {
         $vCard = self::getVCard($user);
         return [
             'id' => $user->id,
-            'uri' => $user->username,
+            'uri' => $user->guid.'.vcf',
             'addressbookid' => $addressBookId,
             'lastmodified' => date_timestamp_get(date_create_from_format('Y-m-d H:i:s', $user->updated_at)),
             'carddata' => $vCard,

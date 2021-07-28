@@ -14,11 +14,12 @@ use humhub\modules\user\models\forms\Login;
 class AuthenticationBackend extends AbstractBasic {
     protected function validateUserPass($username, $password) {
         $login = new Login;
-        if (!$login->load(['username' => $username, 'password' => $password], '') || !$login->validate()) {
-            return false;
+
+        if ($login->load(['username' => $username, 'password' => $password], '')  && $login->validate()) {
+            return true;
         }
-        
-        return true;
+
+        return false;
     }
 }
 

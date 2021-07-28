@@ -16,11 +16,13 @@ use humhub\components\Controller;
 use humhub\components\access\ControllerAccess;
 use humhub\modules\humdav\components\sabre\PrincipalBackend;
 use humhub\modules\humdav\components\sabre\CardDavBackend;
+use humhub\modules\humdav\components\sabre\CalDavBackend;
 use humhub\modules\humdav\components\sabre\AuthenticationBackend;
 use humhub\modules\humdav\models\sabre\AddressBookRoot;
 use humhub\modules\humdav\models\sabre\PrincipalCollection;
 use yii\web\HttpException;
 use Sabre\DAV\Server;
+use Sabre\CalDAV\CalendarRoot;
 
 
 class RemoteController extends Controller {
@@ -57,12 +59,14 @@ class RemoteController extends Controller {
         //Backends
         $principalBackend = new PrincipalBackend();
         $cardDavBackend = new CardDavBackend();
+        $calDavBackend = new CalDavBackend();
         $authBackend = new AuthenticationBackend();
 
         // Setting up the directory tree
         $nodes = [
             new PrincipalCollection($principalBackend),
             new AddressBookRoot($principalBackend, $cardDavBackend),
+            new CalendarRoot($principalBackend, $calDavBackend)
         ];
 
 
@@ -80,6 +84,7 @@ class RemoteController extends Controller {
         $server->addPlugin($aclPlugin);
 
         $server->addPlugin(new \Sabre\CardDAV\Plugin());
+        $server->addPlugin(new \Sabre\CalDAV\Plugin());
 
         if ((boolean)$settings->get('enable_browser_plugin', false) === true) {
             $server->addPlugin(new \Sabre\DAV\Browser\Plugin());
@@ -88,7 +93,7 @@ class RemoteController extends Controller {
 
         // And off we go!
         $server->exec();
-
+        
         exit(0);
     }
 }

@@ -35,10 +35,16 @@ use humhub\modules\directory\widgets\Menu;
                         Otherwise you can enter the following configuration into your device (<a href="https://wiki.davical.org/index.php/CardDAV_Clients" target="_blank" rel="noopener noreferrer">List with some CardDAV clients</a>):
                         <dl>
                             <dt>Type:</dt>
-                            <dd>CardDAV</dd>
+                            <dd>CardDAV & CalDAV</dd>
 
-                            <dt>DAV Url:</dt>
+                            <dt>CardDAV Url:</dt>
                             <dd><?=Url::to(['/humdav/remote/addressbooks/'.Yii::$app->user->identity->username.'/'], true)?></dd>
+
+                            <dt>CalDAV Url:</dt>
+                            <dd><?=Url::to(['/humdav/remote/calendars/'.Yii::$app->user->identity->username.'/'], true)?></dd>
+
+                            <dt>Principal URL (=CalDAV Url for iOS and macOS):</dt>
+                            <dd><?=Url::to(['/humdav/remote/principals/'.Yii::$app->user->identity->username.'/'], true)?></dd>
 
                             <dt>Username:</dt>
                             <dd><?=Yii::$app->user->identity->username?></dd>

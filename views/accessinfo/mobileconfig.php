@@ -23,6 +23,12 @@ if (!in_array($targetDevice, ['ios', 'osx'])) {
 
 $secureRequests = Yii::$app->request->getIsSecureConnection() ? 'true': 'false';
 
+$payloadVersion = 1;
+
+$uniqueId = UUIDHelper::generateNewFromStrings(Yii::$app->settings->get('name'), $currentIdentity->username, 'HumDAV');
+$uniqueCardDavId = UUIDHelper::generateNewFromStrings('CardDAV', $uniqueId);
+$uniqueCalDavId = UUIDHelper::generateNewFromStrings('CalDAV', $uniqueId);
+
 $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -47,15 +53,43 @@ $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 			<key>PayloadDisplayName</key>
 			<string>'.$currentIdentity->username.' CardDAV</string>
 			<key>PayloadIdentifier</key>
-			<string>com.humdav.setup.carddav</string>
+			<string>com.humdav.setup.carddav.'.$uniqueCardDavId.'</string>
 			<key>PayloadOrganization</key>
 			<string></string>
 			<key>PayloadType</key>
 			<string>com.apple.carddav.account</string>
 			<key>PayloadUUID</key>
-			<string>'.UUIDHelper::generateNewFromStrings('CardDAV', Yii::$app->settings->get('name'), $currentIdentity->username, 'HumDAV').'</string>
+			<string>'.$uniqueCardDavId.'</string>
 			<key>PayloadVersion</key>
-			<integer>1</integer>
+			<integer>'.$payloadVersion.'</integer>
+		</dict>
+		<dict>
+			<key>CalDAVAccountDescription</key>
+			<string>'.Yii::$app->settings->get('name').' CalDAV</string>
+			<key>CalDAVHostName</key>
+			<string>'.Yii::$app->request->getHostName().'</string>
+			<key>CalDAVPort</key>
+			<integer>'.Yii::$app->request->getServerPort().'</integer>
+			<key>CalDAVPrincipalURL</key>
+			<string>'.Url::to('/humdav/remote/principals/'.$currentIdentity->username.'/', $targetDevice === 'ios').'</string>
+			<key>CalDAVUseSSL</key>
+            <'.$secureRequests.'/>
+			<key>CalDAVUsername</key>
+            <string>'.$currentIdentity->username.'</string>
+			<key>PayloadDescription</key>
+			<string>CalDAV Configuration</string>
+			<key>PayloadDisplayName</key>
+			<string>'.$currentIdentity->username.' CalDAV</string>
+			<key>PayloadIdentifier</key>
+			<string>com.humdav.setup.caldav.'.$uniqueCalDavId.'</string>
+			<key>PayloadOrganization</key>
+			<string></string>
+			<key>PayloadType</key>
+			<string>com.apple.caldav.account</string>
+			<key>PayloadUUID</key>
+			<string>'.$uniqueCalDavId.'</string>
+			<key>PayloadVersion</key>
+			<integer>'.$payloadVersion.'</integer>
 		</dict>
 	</array>
 	<key>PayloadDescription</key>
@@ -63,7 +97,7 @@ $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 	<key>PayloadDisplayName</key>
 	<string>'.Yii::$app->settings->get('name').' HumDAV Configuration</string>
 	<key>PayloadIdentifier</key>
-	<string>com.humdav.setup</string>
+	<string>com.humdav.setup.'.$uniqueId.'</string>
 	<key>PayloadOrganization</key>
 	<string></string>
 	<key>PayloadRemovalDisallowed</key>
@@ -71,9 +105,9 @@ $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 	<key>PayloadType</key>
 	<string>Configuration</string>
 	<key>PayloadUUID</key>
-	<string>'.UUIDHelper::generateNewFromStrings(Yii::$app->settings->get('name'), $currentIdentity->username, 'HumDAV').'</string>
+	<string>'.$uniqueId.'</string>
 	<key>PayloadVersion</key>
-	<integer>1</integer>
+	<integer>'.$payloadVersion.'</integer>
 </dict>
 </plist>';
 

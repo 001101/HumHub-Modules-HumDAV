@@ -15,7 +15,9 @@ use humhub\modules\humdav\definitions\RouteDefinitions;
 
 class Events {
     public static function onBeforeModuleDisable($event) {
-        AdminController::restoreHtaccess();
+        if ($event->moduleId === 'humdav') {
+            AdminController::restoreHtaccess();
+        }
     }
 
     public static function onBeforeRequest($event) {

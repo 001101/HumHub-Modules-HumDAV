@@ -138,6 +138,11 @@ class AdminController extends Controller {
         if (!self::autoDiscoveryWriteable()) {
             return false;
         }
+
+        if (!file_exists(Yii::getAlias('@webroot/.htaccess.humdav.backup'))) {
+            return false;
+        }
+
         if (!copy(Yii::getAlias('@webroot/.htaccess.humdav.backup'), Yii::getAlias('@webroot/.htaccess'))) {
             return false;
         }

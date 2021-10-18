@@ -15,6 +15,11 @@ class Module extends \humhub\components\Module {
     /**
      * @inheritdoc
      */
+    public $resourcesPath = 'resources';
+    
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action) {
         Yii::$app->request->setBodyParams(null);
 

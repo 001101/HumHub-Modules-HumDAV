@@ -32,29 +32,8 @@ class AdminController extends Controller {
 
         return $this->render('index', [
             'model' => $form,
-            'version_infos' => [
-                'local_version' => Yii::$app->getModule('humdav')->version,
-                'github_version' => self::getGitHubVersion()
-            ],
             'auto_discovery_available' => self::autoDiscoveryAvailable()
         ]);
-    }
-
-    public function actionUpdate() {
-        exec('git', $gitAvailable);
-        if (!empty($gitAvailable)) {
-            exec('cd '.__DIR__.' && cd .. && git pull origin master');
-        }
-        return $this->redirect(Url::to(['/humdav/admin/index']));
-    }
-
-    private static function getGitHubVersion() {
-        $rawConfigJson = file_get_contents('https://raw.githubusercontent.com/KeudellCoding/HumHub-Modules-HumDAV/master/module.json');
-        if (!empty($rawConfigJson)) {
-            $configJson = json_decode($rawConfigJson, true);
-            return $configJson['version'];
-        }
-        return null;
     }
 
     public static function autoDiscoveryWriteable() {

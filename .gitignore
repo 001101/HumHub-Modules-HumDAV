@@ -3,4 +3,5 @@ nbproject
 .idea/*
 .gitmodules
 /composer.lock
-
+.DS_Store
+._.DS_Store

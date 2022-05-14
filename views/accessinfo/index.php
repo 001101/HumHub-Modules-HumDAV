@@ -14,13 +14,7 @@ use humhub\modules\directory\widgets\Menu;
 
 <div class="container">
     <div class="row">
-        <?php if ($instructionLocation === 'directory_menu') { ?>
-            <div class="col-md-2">
-                <?= Menu::widget(); ?>
-            </div>
-        <?php } ?>
-
-        <div class="<?= $instructionLocation === 'directory_menu' ? 'col-md-10' : 'col-md-12' ?>">
+        <div class="col-md-12">
             <div class="panel">
                 <div class="panel-heading"><i class="fa far fa-address-card"></i> <span><strong>HumDAV</strong> Access Infos</span></div>
                 <div class="panel-body">

@@ -15,6 +15,8 @@ class RouteDefinitions {
             ['pattern' => 'humdav/remote/<tmpParam:.*>', 'route' => 'humdav/remote'],
 
             ['pattern' => 'humdav/accessinfo/index', 'route' => 'humdav/accessinfo', 'verb' => ['GET']],
+            ['pattern' => 'humdav/accessinfo/token-info', 'route' => 'humdav/accessinfo/token-info', 'verb' => ['GET', 'POST']],
+            ['pattern' => 'humdav/accessinfo/revoke-token', 'route' => 'humdav/accessinfo/revoke-token', 'verb' => ['GET', 'POST']],
             ['pattern' => 'humdav/accessinfo/mobileconfig', 'route' => 'humdav/accessinfo/mobileconfig', 'verb' => ['GET']],
 
             // Config

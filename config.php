@@ -6,10 +6,12 @@
  * @author KeudellCoding
  */
 
+use humhub\commands\IntegrityController;
 use humhub\components\Application;
 use humhub\components\ModuleManager;
 use humhub\modules\humdav\Events;
 use humhub\modules\marketplace\components\OnlineModuleManager;
+use humhub\modules\user\models\User;
 use humhub\widgets\TopMenu;
 
 return [
@@ -20,6 +22,8 @@ return [
         [ModuleManager::class, ModuleManager::EVENT_BEFORE_MODULE_DISABLE, [Events::class, 'onBeforeModuleDisable']],
         [Application::class, Application::EVENT_BEFORE_REQUEST, [Events::class, 'onBeforeRequest']],
         [TopMenu::class, TopMenu::EVENT_INIT, [Events::class, 'onTopMenuInit']],
-        [OnlineModuleManager::class, OnlineModuleManager::EVENT_AFTER_UPDATE, ['\humhub\modules\usermap\Events', 'onAfterUpdate']]
+        [OnlineModuleManager::class, OnlineModuleManager::EVENT_AFTER_UPDATE, [Events::class, 'onAfterUpdate']],
+        [IntegrityController::class, IntegrityController::EVENT_ON_RUN, [Events::class, 'onIntegrityCheck']],
+        [User::class, User::EVENT_BEFORE_DELETE, [Events::class, 'onUserDelete']]
     ]
 ];

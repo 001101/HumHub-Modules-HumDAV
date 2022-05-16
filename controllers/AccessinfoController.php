@@ -11,6 +11,9 @@ namespace humhub\modules\humdav\controllers;
 use Yii;
 use humhub\components\Controller;
 use humhub\components\Response;
+use humhub\modules\humdav\models\UserToken;
+use humhub\modules\humdav\models\UserTokenSearch;
+use yii\helpers\Url;
 use yii\web\NotFoundHttpException;
 use yii\web\ForbiddenHttpException;
 
@@ -38,10 +41,44 @@ class AccessinfoController extends Controller {
     }
 
     public function actionIndex() {
-        $settings = Yii::$app->getModule('humdav')->settings;
+        $searchModel = new UserTokenSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
-            'instructionLocation' => $settings->get('instruction_location')
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel
+        ]);
+    }
+
+    public function actionTokenInfo($id) {
+        $userToken = UserToken::findOne($id);
+        if ($userToken === null) throw new NotFoundHttpException();
+        if (!$userToken->canEdit()) throw new ForbiddenHttpException();
+
+        if ($userToken->load(Yii::$app->request->post()) && $userToken->validate() && $userToken->save()) {
+            $this->view->saved();
+            return $this->redirect(Url::to(['index']));
+        }
+
+        return $this->render('TokenInfo', [
+            'userToken' => $userToken,
+            'viewFields' => UserTokenSearch::getViewableFields()
+        ]);
+    }
+
+    public function actionRevokeToken($id) {
+        $userToken = UserToken::findOne($id);
+        if ($userToken === null) throw new NotFoundHttpException();
+        if (!$userToken->canEdit()) throw new ForbiddenHttpException();
+
+        if(Yii::$app->request->post('revoke-token-action') == 'revoke' && $userToken->delete()) {
+            $this->view->info('The token has been revoked.');
+            return $this->redirect(Url::to(['index']));
+        }
+
+        return $this->render('RevokeToken', [
+            'userToken' => $userToken,
+            'viewFields' => UserTokenSearch::getViewableFields()
         ]);
     }
 
@@ -49,6 +86,6 @@ class AccessinfoController extends Controller {
         Yii::$app->response->format = Response::FORMAT_RAW;
         $this->layout = false;
         
-        return $this->render('mobileconfig');
+        return $this->render('MobileConfig');
     }
 }

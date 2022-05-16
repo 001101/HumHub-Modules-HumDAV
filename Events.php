@@ -12,6 +12,7 @@ use humhub\modules\humdav\controllers\AdminController;
 use Yii;
 use yii\helpers\Url;
 use humhub\modules\humdav\definitions\RouteDefinitions;
+use humhub\modules\humdav\models\UserToken;
 
 class Events {
     public static function onBeforeModuleDisable($event) {
@@ -72,6 +73,33 @@ class Events {
             } catch (\Throwable $e) {
                 Yii::error($e);
             }
+        }
+    }
+
+    public static function onIntegrityCheck($event) {
+        try {
+            $integrityController = $event->sender;
+
+            $integrityController->showTestHeadline('HumHub DAV Access Module - Token (' . UserToken::find()->count() . ' entries)');
+            foreach (UserToken::find()->joinWith(['user'])->each() as $userToken) {
+                if ($userToken->user == null) {
+                    if ($integrityController->showFix('Deleting token ' . $userToken->id . ' without existing user!')) {
+                        $userToken->delete();
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Yii::error($e);
+        }
+    }
+
+    public static function onUserDelete($event) {
+        try {
+            foreach (UserToken::findAll(['user_id' => $event->sender->id]) as $userToken) {
+                $userToken->delete();
+            }
+        } catch (\Throwable $e) {
+            Yii::error($e);
         }
     }
 }

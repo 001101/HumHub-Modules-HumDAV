@@ -7,6 +7,7 @@
  */
 
 use humhub\modules\humdav\components\UUIDHelper;
+use humhub\modules\humdav\models\UserToken;
 use yii\web\ForbiddenHttpException;
 use yii\web\BadRequestHttpException;
 use yii\helpers\Url;
@@ -21,9 +22,18 @@ if (!in_array($targetDevice, ['ios', 'osx'])) {
 	throw new BadRequestHttpException('"'.$targetDevice.'" is not a supported target.');
 }
 
+$userTokenModel = new UserToken();
+$userTokenModel->user_id = $currentIdentity->id;
+$userTokenModel->name = 'Token for '.$targetDevice;
+$token = $userTokenModel->generateToken();
+if (empty($token)) {
+	throw new Exception('Cannot generate a token.');
+}
+$userTokenModel->save();
+
 $secureRequests = Yii::$app->request->getIsSecureConnection() ? 'true': 'false';
 
-$payloadVersion = 1;
+$payloadVersion = 2;
 
 $uniqueId = UUIDHelper::generateNewFromStrings(Yii::$app->settings->get('name'), $currentIdentity->username, 'HumDAV');
 $uniqueCardDavId = UUIDHelper::generateNewFromStrings('CardDAV', $uniqueId);
@@ -43,11 +53,13 @@ $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 			<key>CardDAVPort</key>
 			<integer>'.Yii::$app->request->getServerPort().'</integer>
 			<key>CardDAVPrincipalURL</key>
-			<string>'.Url::to('/humdav/remote/addressbooks/'.$currentIdentity->username.'/', $targetDevice === 'ios').'</string>
+			<string>'.Url::to('/humdav/remote/addressbooks/'.$currentIdentity->guid.'/', $targetDevice === 'ios').'</string>
 			<key>CardDAVUseSSL</key>
             <'.$secureRequests.'/>
             <key>CardDAVUsername</key>
             <string>'.$currentIdentity->username.'</string>
+			<key>CardDAVPassword</key>
+			<string>'.$token.'</string>
 			<key>PayloadDescription</key>
 			<string>CardDAV Configuration</string>
 			<key>PayloadDisplayName</key>
@@ -71,11 +83,13 @@ $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 			<key>CalDAVPort</key>
 			<integer>'.Yii::$app->request->getServerPort().'</integer>
 			<key>CalDAVPrincipalURL</key>
-			<string>'.Url::to('/humdav/remote/principals/'.$currentIdentity->username.'/', $targetDevice === 'ios').'</string>
+			<string>'.Url::to('/humdav/remote/principals/'.$currentIdentity->guid.'/', $targetDevice === 'ios').'</string>
 			<key>CalDAVUseSSL</key>
             <'.$secureRequests.'/>
 			<key>CalDAVUsername</key>
             <string>'.$currentIdentity->username.'</string>
+			<key>CalDAVPassword</key>
+            <string>'.$token.'</string>
 			<key>PayloadDescription</key>
 			<string>CalDAV Configuration</string>
 			<key>PayloadDisplayName</key>

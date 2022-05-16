@@ -6,8 +6,10 @@
  * @author KeudellCoding
  */
 
+use humhub\libs\ActionColumn;
+use humhub\modules\humdav\models\UserToken;
+use humhub\widgets\GridView;
 use yii\helpers\Url;
-use humhub\modules\directory\widgets\Menu;
 
 \humhub\assets\JqueryKnobAsset::register($this);
 ?>
@@ -32,13 +34,13 @@ use humhub\modules\directory\widgets\Menu;
                             <dd>CardDAV & CalDAV</dd>
 
                             <dt>CardDAV Url:</dt>
-                            <dd><?=Url::to(['/humdav/remote/addressbooks/'.Yii::$app->user->identity->username.'/'], true)?></dd>
+                            <dd><?=Url::to(['/humdav/remote/addressbooks/'.Yii::$app->user->identity->guid.'/'], true)?></dd>
 
                             <dt>CalDAV Url:</dt>
-                            <dd><?=Url::to(['/humdav/remote/calendars/'.Yii::$app->user->identity->username.'/'], true)?></dd>
+                            <dd><?=Url::to(['/humdav/remote/calendars/'.Yii::$app->user->identity->guid.'/'], true)?></dd>
 
                             <dt>Principal URL (=CalDAV Url for iOS and macOS):</dt>
-                            <dd><?=Url::to(['/humdav/remote/principals/'.Yii::$app->user->identity->username.'/'], true)?></dd>
+                            <dd><?=Url::to(['/humdav/remote/principals/'.Yii::$app->user->identity->guid.'/'], true)?></dd>
 
                             <dt>Username:</dt>
                             <dd><?=Yii::$app->user->identity->username?></dd>
@@ -53,6 +55,41 @@ use humhub\modules\directory\widgets\Menu;
                             <dd><?=Yii::$app->user->identity->email?></dd>
                         </dl>
                     </p>
+                    <hr>
+                    <?= GridView::widget([
+                        'dataProvider' => $dataProvider,
+                        'filterModel' => $searchModel,
+                        'tableOptions' => ['class' => 'table table-hover'],
+                        'columns' => [
+                            [
+                                'attribute' => 'name'
+                            ],
+                            [
+                                'attribute' => 'access_scopes'
+                            ],
+                            [
+                                'attribute' => 'last_time_used',
+                                'value' => function (UserToken $userToken) {
+                                    if (empty($userToken->last_time_used))
+                                        return 'Never';
+                                    else
+                                        return $userToken->last_time_used;
+                                }
+                            ],
+                            [
+                                'class' => ActionColumn::class,
+                                'actions' => function (UserToken $userToken, $key, $index) {
+                                    if (!$userToken->canEdit()) return [];
+                                
+                                    return [
+                                        'More Information' => ['token-info'],
+                                        '---',
+                                        'Revoke Access' => ['revoke-token'],
+                                    ];
+                                }
+                            ],
+                        ],
+                    ]) ?>
                     <hr>
                     <p>
                         If authentication is not possible, this may have the following reasons:

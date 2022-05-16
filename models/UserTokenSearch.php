@@ -44,7 +44,6 @@ class UserTokenSearch extends UserToken {
         }
 
         $query->andFilterWhere(['like', 'name', $this->name]);
-        $query->andFilterWhere(['like', 'access_scopes', $this->access_scopes]);
         $query->andFilterWhere(['like', 'last_time_used', $this->last_time_used]);
         $query->andFilterWhere(['like', 'last_time_used_by_ip', $this->last_time_used_by_ip]);
         $query->andFilterWhere(['like', 'last_time_used_by_user_agent', $this->last_time_used_by_user_agent]);

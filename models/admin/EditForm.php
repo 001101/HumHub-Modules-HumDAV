@@ -17,6 +17,7 @@ class EditForm extends Model {
     public $instruction_location;
     public $instruction_location_sort_order;
     public $enabled_users;
+    public $enable_password_auth;
     public $include_address;
     public $include_profile_image;
     public $include_birthday;
@@ -35,7 +36,7 @@ class EditForm extends Model {
             [['instruction_location'], 'in', 'range' => array_keys(static::getWidgetLocations())],
             [['instruction_location_sort_order'], 'number', 'min' => 0],
             [['active', 'enabled_users'], 'safe'],
-            [['include_address', 'include_profile_image', 'include_birthday', 'include_gender', 'include_phone_numbers', 'include_url', 'enable_space_addressbooks', 'enable_browser_plugin', 'enable_auto_discovery'], 'boolean'],
+            [['enable_password_auth', 'include_address', 'include_profile_image', 'include_birthday', 'include_gender', 'include_phone_numbers', 'include_url', 'enable_space_addressbooks', 'enable_browser_plugin', 'enable_auto_discovery'], 'boolean'],
             [['instruction_location_sort_order'], 'required']
         ];
     }
@@ -51,6 +52,7 @@ class EditForm extends Model {
         $this->instruction_location_sort_order = $settings->get('instruction_location_sort_order', 400);
 
         $this->enabled_users = (array)$settings->getSerialized('enabled_users');
+        $this->enable_password_auth = $settings->get('enable_password_auth', false);
 
         $this->include_address = $settings->get('include_address', true);
         $this->include_profile_image = $settings->get('include_profile_image', true);
@@ -71,6 +73,7 @@ class EditForm extends Model {
     public function attributeLabels() {
         return [
             'active' => 'Enable Module',
+            'enable_password_auth' => 'Activate the password authentication (not recommended)',
             'enable_browser_plugin' => 'Enable Browser Access (not recommended)'
         ];
     }
@@ -80,7 +83,8 @@ class EditForm extends Model {
      */
     public function attributeHints() {
         $result = [
-            'enabled_users' => 'If empty, all users have access.'
+            'enabled_users' => 'If empty, all users have access.',
+            'enable_password_auth' => 'The token authentication works independently of the authentication with the user password.'
         ];
 
         if (AdminController::autoDiscoveryAvailable()) {
@@ -107,6 +111,7 @@ class EditForm extends Model {
         $settings->set('instruction_location_sort_order', $this->instruction_location_sort_order);
 
         $settings->setSerialized('enabled_users', (array)$this->enabled_users);
+        $settings->set('enable_password_auth', (boolean) $this->enable_password_auth);
 
         $settings->set('include_address', (boolean) $this->include_address);
         $settings->set('include_profile_image', (boolean) $this->include_profile_image);

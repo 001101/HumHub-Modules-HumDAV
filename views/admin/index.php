@@ -18,7 +18,7 @@ use humhub\modules\humdav\models\admin\EditForm;
     <div class="panel-heading">HumHub DAV Access configuration</div>
     <div class="panel-body">
 
-        <?php $form = ActiveForm::begin(); ?>
+        <?php $form = ActiveForm::begin(['enableClientValidation' => true]); ?>
 
         <?= $form->field($model, 'active')->checkbox(); ?>
         
@@ -30,6 +30,7 @@ use humhub\modules\humdav\models\admin\EditForm;
         <hr />
         
         <?= $form->field($model, 'enabled_users')->widget(UserPickerField::class); ?>
+        <?= $form->field($model, 'enable_password_auth')->checkbox(); ?>
 
         <hr />
 

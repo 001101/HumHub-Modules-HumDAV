@@ -17,7 +17,7 @@ class PrincipalBackend extends AbstractBackend {
     private static function getUserPrincipal(User $user) {
         return [
             'id' => $user->id,
-			'uri' => 'principals/' . $user->username,
+			'uri' => 'principals/' . $user->guid,
             '{DAV:}displayname' => $user->displayName,
             '{http://sabredav.org/ns}email-address' => $user->email
         ];
@@ -42,10 +42,10 @@ class PrincipalBackend extends AbstractBackend {
      * @inheritdoc
      */
     public function getPrincipalByPath($path) {
-        list($prefix, $name) = Uri\split($path);
+        list($prefix, $guid) = Uri\split($path);
 
         if ($prefix === 'principals') {
-            $user = User::findOne(['username' => $name]);
+            $user = User::findByGuid($guid);
             if ($user !== null) {
 				return self::getUserPrincipal($user);
             }

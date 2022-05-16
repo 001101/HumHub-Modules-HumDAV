@@ -43,9 +43,11 @@ class UserToken extends ActiveRecord {
      * {@inheritdoc}
      */
     public function beforeSave($insert) {
-        $this->created_at = date('Y-m-d H:i:s');
-        $this->created_by_ip = Yii::$app->request->getUserIP();
-        $this->created_by_user_agent = Yii::$app->request->getUserAgent();
+        if ($insert) {
+            $this->created_at = date('Y-m-d H:i:s');
+            $this->created_by_ip = Yii::$app->request->getUserIP();
+            $this->created_by_user_agent = Yii::$app->request->getUserAgent();
+        }
 
         return parent::beforeSave($insert);
     }
@@ -58,7 +60,8 @@ class UserToken extends ActiveRecord {
             [['user_id'], 'integer'],
             [['algorithm'], 'string', 'max' => 20],
             [['name', 'token', 'salt'], 'string'],
-            [['name'], 'safe']
+            [['name'], 'safe'],
+            [['user_id', 'name'], 'required']
         ];
     }
 
@@ -73,7 +76,6 @@ class UserToken extends ActiveRecord {
             'algorithm' => 'Algorithm',
             'token' => 'Token',
             'salt' => 'Salt',
-            'access_scopes' => 'Access Scopes',
             'last_time_used' => 'Last Time Used',
             'last_time_used_by_ip' => 'Last Time Used by IP',
             'last_time_used_by_user_agent' => 'Last Time Used by User Agent',
@@ -86,7 +88,6 @@ class UserToken extends ActiveRecord {
     public static function getViewableFields() {
         return [
             'name',
-            'access_scopes',
             'last_time_used',
             'last_time_used_by_ip',
             'last_time_used_by_user_agent',
@@ -129,22 +130,36 @@ class UserToken extends ActiveRecord {
     }
 
     /**
-     * Generates an token and hash it
+     * Generates a token and hash it
      *
      * @return null|string The token if successful, otherwise null
      */
     public function generateToken() {
-        if (!empty($this->token)) {
-            return null;
-        }
-
         $newToken = UUID::v4();
+        return $this->setToken($newToken) ? $newToken : null;
+    }
+
+    /**
+     * Sets a token and hash it
+     *
+     * @return boolean Success
+     */
+    public function setToken(string $newToken) {
+        if (!empty($this->token)) {
+            return false;
+        }
 
         $this->salt = UUID::v4();
         $this->algorithm = $this->defaultAlgorithm;
         $this->token = $this->hashToken($newToken);
 
-        return $newToken;
+        return true;
+    }
+
+    public function updateLastTimeUsed() {
+        $this->last_time_used = date('Y-m-d H:i:s');
+        $this->last_time_used_by_ip = Yii::$app->request->getUserIP();
+        $this->last_time_used_by_user_agent = Yii::$app->request->getUserAgent();
     }
 
     public function getUser() {

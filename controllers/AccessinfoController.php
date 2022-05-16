@@ -13,9 +13,12 @@ use humhub\components\Controller;
 use humhub\components\Response;
 use humhub\modules\humdav\models\UserToken;
 use humhub\modules\humdav\models\UserTokenSearch;
+use yii\helpers\Json;
 use yii\helpers\Url;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\GoneHttpException;
 
 class AccessinfoController extends Controller {
     /**
@@ -41,10 +44,13 @@ class AccessinfoController extends Controller {
     }
 
     public function actionIndex() {
+        $settings = Yii::$app->getModule('humdav')->settings;
+
         $searchModel = new UserTokenSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
+            'enablePasswordAuth' => $settings->get('enable_password_auth', false),
             'dataProvider' => $dataProvider,
             'searchModel' => $searchModel
         ]);
@@ -80,6 +86,35 @@ class AccessinfoController extends Controller {
             'userToken' => $userToken,
             'viewFields' => UserTokenSearch::getViewableFields()
         ]);
+    }
+
+    public function actionGenerateToken() {
+        if (Yii::$app->request->isPost) {
+            $newUserToken = new UserToken(Json::decode(Yii::$app->session->getFlash('newUserToken', '{}', true)));
+            if ($newUserToken == null) throw new GoneHttpException();
+            
+            if ($newUserToken->load(Yii::$app->request->post()) && $newUserToken->validate() && $newUserToken->save())
+                $this->view->saved();
+            else
+                $this->view->info('The token could not be saved.');
+            
+            return $this->redirect(Url::to(['index']));
+        }
+        else if (Yii::$app->request->isGet) {
+            $newUserToken = new UserToken();
+            $newUserToken->user_id = Yii::$app->user->identity->id;
+            $newUserToken->name = 'New Token';
+            $token = $newUserToken->generateToken();
+            if (empty($token)) throw new BadRequestHttpException('Cannot generate a token.');
+            Yii::$app->session->setFlash('newUserToken', Json::encode($newUserToken));
+
+            return $this->render('GenerateToken', [
+                'userToken' => $newUserToken,
+                'token' => $token
+            ]);
+        }
+        
+        throw new BadRequestHttpException();
     }
 
     public function actionMobileconfig() {

@@ -21,8 +21,6 @@ use yii\helpers\Url;
                 <div class="panel-body">
                     <?php
                     $form = ActiveForm::begin();
-                    //<?= $form->field($model, 'active')->checkbox();
-
                     foreach (array_intersect($userToken->fields(), $viewFields) as $fieldName) {
                         echo $form->field($userToken, $fieldName)->textInput(['readonly' => !in_array($fieldName, ['name'])]);
                     }

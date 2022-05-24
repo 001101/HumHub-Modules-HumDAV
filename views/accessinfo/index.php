@@ -8,7 +8,6 @@
 
 use humhub\libs\ActionColumn;
 use humhub\libs\Html;
-use humhub\modules\humdav\assets\ICalAssetBundle;
 use humhub\modules\humdav\models\UserToken;
 use humhub\modules\ui\form\widgets\ActiveForm;
 use humhub\widgets\Button;
@@ -16,7 +15,6 @@ use humhub\widgets\GridView;
 use yii\helpers\Url;
 
 \humhub\assets\JqueryKnobAsset::register($this);
-if ($calendarActivated) ICalAssetBundle::register($this);
 ?>
 
 <div class="container">
@@ -79,7 +77,7 @@ if ($calendarActivated) ICalAssetBundle::register($this);
                                                 <?php if ($calendarActivated) { ?>
                                                     <hr>
 
-                                                    <dt>iCal Address for <?=Html::dropDownList('Addressbook', null, $iCalCalendars, ['id' => 'ical_addressbook_selector'])?> <?=Html::button('Get URL', ['onclick' => 'updateAddressbookAddress()'])?>:</dt>
+                                                    <dt>iCal Address for <?=Html::dropDownList('Addressbook', null, $iCalCalendars, ['id' => 'ical_addressbook_selector'])?> <?=Html::button('Get URL', ['onclick' => '$("#ical_addressbook_address").text($("#ical_addressbook_address").data("default-url").replace("[ADDRESSBOOK-ID]", $("#ical_addressbook_selector").val()))'])?>:</dt>
                                                     <dd id='ical_addressbook_address' data-default-url="<?=Url::to(['/humdav/remote/ical/'.Yii::$app->user->identity->guid.'/[ADDRESSBOOK-ID]/[ICAL-TOKEN]'], true)?>"></dd>
                                                 <?php } ?>
                                             </dl>

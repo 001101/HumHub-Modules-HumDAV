@@ -9,6 +9,7 @@ Changelog
 - Fix #2: If there are special characters in the user name, unexpected errors may occur. Unfortunately, all old URLs become invalid with this fix.
 - Enh: On iOS devices, groups can be activated/deactivated (contacts can thus be displayed multiple times).
 - Fix: Sabre/dav uses the deprecated libxml_disable_entity_loader function, which is no longer usable as of PHP version 8.0.
+- Fix: If the calendar module was not activated/installed, errors could occur.
 
 1.3.3 (May 14, 2022)
 ----------------------

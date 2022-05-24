@@ -16,7 +16,7 @@ class UserTokenSearch extends UserToken {
      * {@inheritdoc}
      */
     public function rules() {
-        return [[self::getViewableFields(), 'safe']];
+        return [[self::getSearchableFields(), 'safe']];
     }
 
     /**
@@ -34,7 +34,7 @@ class UserTokenSearch extends UserToken {
             'pagination' => ['pageSize' => 50],
         ]);
 
-        $dataProvider->setSort(['attributes' => self::getViewableFields()]);
+        $dataProvider->setSort(['attributes' => self::getSearchableFields()]);
 
         $this->load($params);
 
@@ -52,5 +52,18 @@ class UserTokenSearch extends UserToken {
         $query->andFilterWhere(['like', 'created_by_user_agent', $this->created_by_user_agent]);
 
         return $dataProvider;
+    }
+
+    private static function getSearchableFields() {
+        return [
+            'name',
+            'used_for',
+            'last_time_used',
+            'last_time_used_by_ip',
+            'last_time_used_by_user_agent',
+            'created_at',
+            'created_by_ip',
+            'created_by_user_agent'
+        ];
     }
 }

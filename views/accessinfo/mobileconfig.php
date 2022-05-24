@@ -25,6 +25,7 @@ if (!in_array($targetDevice, ['ios', 'osx'])) {
 $userTokenModel = new UserToken();
 $userTokenModel->user_id = $currentIdentity->id;
 $userTokenModel->name = 'Token for '.$targetDevice;
+$userTokenModel->used_for = UserToken::USED_FOR_DAV;
 $token = $userTokenModel->generateToken();
 if (empty($token)) {
 	throw new Exception('Cannot generate a token.');

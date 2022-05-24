@@ -11,9 +11,14 @@ namespace humhub\modules\humdav\models;
 use Exception;
 use humhub\components\ActiveRecord;
 use humhub\libs\UUID;
+use humhub\modules\user\models\User;
 use Yii;
 
 class UserToken extends ActiveRecord {
+    CONST USED_FOR_NOTHING = 0;
+    const USED_FOR_DAV = 1;
+    const USED_FOR_ICAL = 2;
+
     public $defaultAlgorithm = '';
 
     /**
@@ -57,11 +62,11 @@ class UserToken extends ActiveRecord {
      */
     public function rules() {
         return [
-            [['user_id'], 'integer'],
+            [['user_id', 'used_for'], 'integer'],
             [['algorithm'], 'string', 'max' => 20],
             [['name', 'token', 'salt'], 'string'],
-            [['name'], 'safe'],
-            [['user_id', 'name'], 'required']
+            [['name', 'used_for'], 'safe'],
+            [['user_id', 'name', 'used_for'], 'required']
         ];
     }
 
@@ -76,6 +81,7 @@ class UserToken extends ActiveRecord {
             'algorithm' => 'Algorithm',
             'token' => 'Token',
             'salt' => 'Salt',
+            'used_for' => 'Used For',
             'last_time_used' => 'Last Time Used',
             'last_time_used_by_ip' => 'Last Time Used by IP',
             'last_time_used_by_user_agent' => 'Last Time Used by User Agent',
@@ -85,32 +91,10 @@ class UserToken extends ActiveRecord {
         ];
     }
 
-    public static function getViewableFields() {
-        return [
-            'name',
-            'last_time_used',
-            'last_time_used_by_ip',
-            'last_time_used_by_user_agent',
-            'created_at',
-            'created_by_ip',
-            'created_by_user_agent'
-        ];
-    }
-
-    /**
-     * Validates a given token against database record
-     *
-     * @param string $token unhashed
-     * @return boolean Success
-     */
-    public function validateToken($token) {
-        return Yii::$app->security->compareString($this->token, $this->hashToken($token)) === true;
-    }
-
     /**
      * Hashes a token
      *
-     * @param type $token
+     * @param string $token
      * @return string Hashed token
      */
     private function hashToken($token) {
@@ -168,5 +152,30 @@ class UserToken extends ActiveRecord {
 
     public function canEdit() {
         return $this->user_id === Yii::$app->user->id;
+    }
+
+    public static function validateTokenForUser(User $user, string $token, int $usedFor) {
+        $settings = Yii::$app->getModule('humdav')->settings;
+        if ((boolean)$settings->get('active', false) !== true) return false;
+        $allowedUsers = array_filter((array)$settings->getSerialized('enabled_users'));
+        if (!in_array($user->guid, $allowedUsers) && !empty($allowedUsers)) return false;
+
+        $tokens = UserToken::find()
+            ->joinWith('user')
+            ->where([
+                'user_id' => $user->id,
+                'used_for' => $usedFor,
+                'user.status' => User::STATUS_ENABLED
+            ])->all();
+
+        foreach ($tokens as $userToken) {
+            if (Yii::$app->security->compareString($userToken->token, $userToken->hashToken($token)) === true) {
+                $userToken->updateLastTimeUsed();
+                $userToken->save();
+                return true;
+            }
+        }
+
+        return false;
     }
 }

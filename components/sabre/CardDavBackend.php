@@ -9,6 +9,7 @@
 namespace humhub\modules\humdav\components\sabre;
 
 use Yii;
+use Sabre\Uri;
 use Sabre\DAV\PropPatch;
 use Sabre\CardDAV\Backend\AbstractBackend;
 use Sabre\CardDAV\Plugin;
@@ -23,11 +24,16 @@ class CardDavBackend extends AbstractBackend {
      * @inheritdoc
      */
     public function getAddressBooksForUser($principalUri) {
-        $username = Yii::$app->request->getAuthUser();
-        $currentUser = User::findOne(['username' => $username]);
-        if ($currentUser === null) {
-            return [];
-        }
+        list($prefix, $guid) = Uri\split($principalUri);
+        if ($prefix !== 'principals') return [];
+
+        $user = User::findByGuid($guid);
+        if ($user === null) return [];
+
+        $globalSettings = Yii::$app->getModule('humdav')->settings;
+        $userSettings = $globalSettings->contentContainer($user);
+        $enableSpaceAddressbooks = $globalSettings->get('enable_space_addressbooks', true);
+        $groupsAsAddressbooks = $userSettings->get('provide_groups_as_separate_addressbooks', false);
 
         $results = [
             [
@@ -36,19 +42,21 @@ class CardDavBackend extends AbstractBackend {
                 'principaluri' => $principalUri,
                 '{DAV:}displayname' => 'All Users',
                 '{'.Plugin::NS_CARDDAV.'}addressbook-description' => 'All Users from "'.Yii::$app->settings->get('name').'"'
-            ],
-            [
+            ]
+        ];
+
+        if ($groupsAsAddressbooks) {
+            $results[] = [
                 'id' => '1',
                 'uri' => 'following',
                 'principaluri' => $principalUri,
                 '{DAV:}displayname' => 'Following',
                 '{'.Plugin::NS_CARDDAV.'}addressbook-description' => 'All users you are following'
-            ]
-        ];
-
-        $settings = Yii::$app->getModule('humdav')->settings;
-        if ($settings->get('enable_space_addressbooks', true)) {
-            foreach (Membership::getUserSpaces($currentUser->id) as $space) {
+            ];
+        }
+        
+        if ($enableSpaceAddressbooks && $groupsAsAddressbooks) {
+            foreach (Membership::getUserSpaces($user->id) as $space) {
                 $results[] = [
                     'id' => 'space_'.$space->id,
                     'uri' => 'space_'.$space->url,
@@ -109,7 +117,7 @@ class CardDavBackend extends AbstractBackend {
         }
 
         foreach ($usersForCards as $user) {
-            $results[] = VCardDefinitions::getVCardDefinition($user, $addressBookId);
+            $results[] = VCardDefinitions::getVCardDefinition($user, $addressBookId, $currentUser);
         }
 
         return $results;

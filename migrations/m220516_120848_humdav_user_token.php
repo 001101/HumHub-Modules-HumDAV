@@ -23,6 +23,7 @@ class m220516_120848_humdav_user_token extends Migration {
             'algorithm' => $this->string(20)->notNull(),
             'token' => $this->text()->notNull(),
             'salt' => $this->text()->notNull(),
+            'used_for' => $this->tinyInteger(4)->notNull(),
             'last_time_used' => $this->dateTime(),
             'last_time_used_by_ip' => $this->string(),
             'last_time_used_by_user_agent' => $this->string(),

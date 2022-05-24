@@ -12,9 +12,14 @@ class RouteDefinitions {
     public static function getDefinitions() {
         return [
             ['pattern' => 'humdav/remote', 'route' => 'humdav/remote'],
+            [
+                'pattern' => 'humdav/remote/ical/<userGuid:[a-zA-Z0-9_-]+>/<calendarId:[a-zA-Z0-9_-]+>/<token:[a-zA-Z0-9_-]+>',
+                'route' => 'humdav/remote/ical',
+                'verb' => ['GET']
+            ],
             ['pattern' => 'humdav/remote/<tmpParam:.*>', 'route' => 'humdav/remote'],
 
-            ['pattern' => 'humdav/accessinfo/index', 'route' => 'humdav/accessinfo', 'verb' => ['GET']],
+            ['pattern' => 'humdav/accessinfo/index', 'route' => 'humdav/accessinfo', 'verb' => ['GET', 'POST']],
             ['pattern' => 'humdav/accessinfo/token-info', 'route' => 'humdav/accessinfo/token-info', 'verb' => ['GET', 'POST']],
             ['pattern' => 'humdav/accessinfo/revoke-token', 'route' => 'humdav/accessinfo/revoke-token', 'verb' => ['GET', 'POST']],
             ['pattern' => 'humdav/accessinfo/generate-token', 'route' => 'humdav/accessinfo/generate-token', 'verb' => ['GET', 'POST']],

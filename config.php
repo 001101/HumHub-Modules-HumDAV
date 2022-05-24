@@ -24,6 +24,7 @@ return [
         [TopMenu::class, TopMenu::EVENT_INIT, [Events::class, 'onTopMenuInit']],
         [OnlineModuleManager::class, OnlineModuleManager::EVENT_AFTER_UPDATE, [Events::class, 'onAfterUpdate']],
         [IntegrityController::class, IntegrityController::EVENT_ON_RUN, [Events::class, 'onIntegrityCheck']],
-        [User::class, User::EVENT_BEFORE_DELETE, [Events::class, 'onUserDelete']]
+        [User::class, User::EVENT_BEFORE_DELETE, [Events::class, 'onUserDelete']],
+        [User::class, User::EVENT_AFTER_UPDATE, [Events::class, 'onUserUpdate']]
     ]
 ];

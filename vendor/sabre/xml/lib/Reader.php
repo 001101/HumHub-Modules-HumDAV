@@ -56,7 +56,8 @@ class Reader extends XMLReader {
      */
     function parse() {
 
-        $previousEntityState = libxml_disable_entity_loader(true);
+        if (\PHP_VERSION_ID < 80000)
+            $previousEntityState = libxml_disable_entity_loader(true);
         $previousSetting = libxml_use_internal_errors(true);
 
         try {
@@ -78,7 +79,8 @@ class Reader extends XMLReader {
 
         } finally {
             libxml_use_internal_errors($previousSetting);
-            libxml_disable_entity_loader($previousEntityState);
+            if (\PHP_VERSION_ID < 80000)
+                libxml_disable_entity_loader($previousEntityState);
         }
 
         return $result;

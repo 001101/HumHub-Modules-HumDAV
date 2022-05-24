@@ -8,10 +8,10 @@
 
 namespace humhub\modules\humdav\components\sabre;
 
-use humhub\modules\calendar\models\CalendarEntry;
 use humhub\modules\humdav\definitions\VCalDefinitions;
-use humhub\modules\space\models\Space;
+use humhub\modules\space\models\Membership;
 use Yii;
+use Sabre\Uri;
 use Sabre\CalDAV\Backend\AbstractBackend;
 use humhub\modules\user\models\User;
 
@@ -20,15 +20,17 @@ class CalDavBackend extends AbstractBackend {
      * @inheritdoc
      */
     public function getCalendarsForUser($principalUri) {
-        $username = Yii::$app->request->getAuthUser();
-        $currentUser = User::findOne(['username' => $username]);
-        if ($currentUser === null) {
-            return [];
-        }
+        if (Yii::$app->getModule('calendar') === null) return [];
+
+        list($prefix, $guid) = Uri\split($principalUri);
+        if ($prefix !== 'principals') return [];
+
+        $user = User::findByGuid($guid);
+        if ($user === null) return [];
 
         $results = [];
 
-        if ($currentUser->isModuleEnabled('calendar')) {
+        if ($user->isModuleEnabled('calendar')) {
             $results[] = [
                 'id' => '0',
                 'uri' => 'personal',
@@ -38,13 +40,8 @@ class CalDavBackend extends AbstractBackend {
             ];
         }
 
-        foreach (Space::find()->all() as $space) {
+        foreach (Membership::getUserSpaces($user->id) as $space) {
             if (!$space->isModuleEnabled('calendar')) {
-                continue;
-            }
-
-            // TODO: Make this optional
-            if (!CalendarEntry::find()->contentContainer($space)->readable($currentUser)->exists()) {
                 continue;
             }
 
@@ -85,22 +82,18 @@ class CalDavBackend extends AbstractBackend {
      * @inheritdoc
      */
     public function getCalendarObjects($calendarId) {
-        $results = [];
-        $calendarEntries = [];
-        
+        if (Yii::$app->getModule('calendar') === null) return [];
+
         $username = Yii::$app->request->getAuthUser();
         $currentUser = User::findOne(['username' => $username]);
         if ($currentUser === null) {
             return [];
         }
         
-        if ($calendarId === '0') {
-            $calendarEntries = CalendarEntry::find()->contentContainer($currentUser)->all();
-        }
-        else if (str_starts_with($calendarId, 'space_')) {
-            $calendarEntries = $this->getSpaceCalendarObjects(substr($calendarId, strpos($calendarId, '_') + 1), $currentUser);
-        }
-
+        $calendarEntries = VCalDefinitions::getCalendarObjects($calendarId, $currentUser);
+        if ($calendarEntries === null) return [];
+        
+        $results = [];
         foreach ($calendarEntries as $calendarEntry) {
             $results[] = VCalDefinitions::getVCalDefinition($calendarEntry, $calendarId);
         }
@@ -140,16 +133,5 @@ class CalDavBackend extends AbstractBackend {
      */
     public function deleteCalendarObject($calendarId, $objectUri) {
         throw new \Sabre\DAV\Exception\BadRequest('Not implemented yet!');
-    }
-
-    // ==================================================================================================================
-
-    private function getSpaceCalendarObjects(string $spaceId, User $currentUser) {
-        $space = Space::findOne(['id' => $spaceId]);
-        if ($space === null) {
-            return [];
-        }
-
-        return CalendarEntry::find()->contentContainer($space)->readable($currentUser)->all();
     }
 }

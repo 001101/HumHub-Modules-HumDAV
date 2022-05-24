@@ -11,9 +11,12 @@ namespace humhub\modules\humdav\definitions;
 use Yii;
 use humhub\modules\user\models\User;
 use humhub\libs\ProfileImage;
+use humhub\modules\space\models\Membership;
+use humhub\modules\space\models\Space;
+use humhub\modules\user\models\Follow;
 
 class VCardDefinitions {
-    public static function getVCard(User $user) {
+    public static function getVCard(User $user, User $currentUser) {
         $settings = Yii::$app->getModule('humdav')->settings;
 
         $profile = $user->profile;
@@ -25,6 +28,16 @@ class VCardDefinitions {
         $vCard .= "FN:$user->displayname\r\n";
         $vCard .= "N:$profile->lastname;$profile->firstname;;;\r\n";
         $vCard .= "EMAIL:$user->email\r\n";
+
+        $categories = ['All Users'];
+        if (Follow::findOne(['user_id' => $currentUser->id, 'object_model' => User::class, 'object_id' => $user->id]) !== null) {
+            $categories[] = 'Following';
+        }
+        foreach (array_intersect(Membership::getUserSpaceIds($user->id), Membership::getUserSpaceIds($currentUser->id)) as $spaceId) {
+            $space = Space::findOne(['id' => $spaceId]);
+            $categories[] = str_replace(["\\", "\n", ",", ";"], ["\\\\", "\\n", "\\,", "\\;"], $space->name);
+        }
+        $vCard .= "CATEGORIES:" . implode(',', $categories) . "\r\n";
 
         if ((boolean)$settings->get('include_address', true) === true) {  // Adding Address
             $vCard .= "ADR;TYPE=home:;;$profile->street;$profile->city;$profile->state;$profile->zip;$profile->country\r\n";
@@ -93,8 +106,8 @@ class VCardDefinitions {
         return $vCard;
     }
 
-    public static function getVCardDefinition(User $user, $addressBookId) {
-        $vCard = self::getVCard($user);
+    public static function getVCardDefinition(User $user, $addressBookId, User $currentUser) {
+        $vCard = self::getVCard($user, $currentUser);
         return [
             'id' => $user->id,
             'uri' => $user->guid.'.vcf',

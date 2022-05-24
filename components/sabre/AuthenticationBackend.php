@@ -28,8 +28,16 @@ class AuthenticationBackend extends AbstractBasic {
         if (!$userpass)
             return [false, "No 'Authorization: Basic' header found. Either the client didn't send one, or the server is misconfigured"];
 
-        $user = User::findOne(['username' => $userpass[0]]);
+        $user = User::findOne(['username' => $userpass[0], 'status' => User::STATUS_ENABLED]);
         if ($user === null)
+            return [false, "Username or password was incorrect"];
+
+        $settings = Yii::$app->getModule('humdav')->settings;
+        if ((boolean)$settings->get('active', false) !== true)
+            return [false, "Username or password was incorrect"];
+            
+        $allowedUsers = array_filter((array)$settings->getSerialized('enabled_users'));
+        if (!in_array($user->guid, $allowedUsers) && !empty($allowedUsers))
             return [false, "Username or password was incorrect"];
 
         if (!$this->validateUserPass($userpass[0], $userpass[1]))
@@ -39,15 +47,11 @@ class AuthenticationBackend extends AbstractBasic {
     }
 
     protected function validateUserPass($username, $password) {
-        $user = User::findOne(['username' => $username]);
+        $user = User::findOne(['username' => $username, 'status' => User::STATUS_ENABLED]);
         if ($user === null) return false;
         
-        foreach (UserToken::findAll(['user_id' => $user->id]) as $userToken) {
-            if ($userToken->validateToken($password)) {
-                $userToken->updateLastTimeUsed();
-                $userToken->save();
-                return true;
-            }
+        if (UserToken::validateTokenForUser($user, $password, UserToken::USED_FOR_DAV)) {
+            return true;
         }
 
         $settings = Yii::$app->getModule('humdav')->settings;

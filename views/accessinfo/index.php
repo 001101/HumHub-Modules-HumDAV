@@ -79,7 +79,7 @@ if ($calendarActivated) ICalAssetBundle::register($this);
                                                 <?php if ($calendarActivated) { ?>
                                                     <hr>
 
-                                                    <dt>iCal Address for <?=Html::dropDownList('Addressbook', null, $iCalCalendars, ['id' => 'ical_addressbook_selector'])?> <?=Html::button('Update URL', ['onclick' => 'updateAddressbookAddress()'])?>:</dt>
+                                                    <dt>iCal Address for <?=Html::dropDownList('Addressbook', null, $iCalCalendars, ['id' => 'ical_addressbook_selector'])?> <?=Html::button('Get URL', ['onclick' => 'updateAddressbookAddress()'])?>:</dt>
                                                     <dd id='ical_addressbook_address' data-default-url="<?=Url::to(['/humdav/remote/ical/'.Yii::$app->user->identity->guid.'/[ADDRESSBOOK-ID]/[ICAL-TOKEN]'], true)?>"></dd>
                                                 <?php } ?>
                                             </dl>

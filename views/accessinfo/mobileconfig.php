@@ -34,8 +34,6 @@ $userTokenModel->save();
 
 $secureRequests = Yii::$app->request->getIsSecureConnection() ? 'true': 'false';
 
-$payloadVersion = 2;
-
 $uniqueId = UUIDHelper::generateNewFromStrings(Yii::$app->settings->get('name'), $currentIdentity->username, 'HumDAV');
 $uniqueCardDavId = UUIDHelper::generateNewFromStrings('CardDAV', $uniqueId);
 $uniqueCalDavId = UUIDHelper::generateNewFromStrings('CalDAV', $uniqueId);
@@ -74,7 +72,7 @@ $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 			<key>PayloadUUID</key>
 			<string>'.$uniqueCardDavId.'</string>
 			<key>PayloadVersion</key>
-			<integer>'.$payloadVersion.'</integer>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>CalDAVAccountDescription</key>
@@ -104,7 +102,7 @@ $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 			<key>PayloadUUID</key>
 			<string>'.$uniqueCalDavId.'</string>
 			<key>PayloadVersion</key>
-			<integer>'.$payloadVersion.'</integer>
+			<integer>1</integer>
 		</dict>
 	</array>
 	<key>PayloadDescription</key>
@@ -122,7 +120,7 @@ $mobileconfig = '<?xml version="1.0" encoding="UTF-8"?>
 	<key>PayloadUUID</key>
 	<string>'.$uniqueId.'</string>
 	<key>PayloadVersion</key>
-	<integer>'.$payloadVersion.'</integer>
+	<integer>1</integer>
 </dict>
 </plist>';
 

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.4.1 (Jun 01, 2022)
+----------------------
+- Fix: The payload version for the automatic configuration files for iOS and macOS was wrong.
+
 1.4.0 (May 24, 2022)
 ----------------------
 - Enh: Adding a Token Authentication

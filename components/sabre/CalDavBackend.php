@@ -30,7 +30,7 @@ class CalDavBackend extends AbstractBackend {
 
         $results = [];
 
-        if ($user->isModuleEnabled('calendar')) {
+        if ($user->moduleManager->isEnabled('calendar')) {
             $results[] = [
                 'id' => '0',
                 'uri' => 'personal',
@@ -41,7 +41,7 @@ class CalDavBackend extends AbstractBackend {
         }
 
         foreach (Membership::getUserSpaces($user->id) as $space) {
-            if (!$space->isModuleEnabled('calendar')) {
+            if (!$space->moduleManager->isEnabled('calendar')) {
                 continue;
             }
 

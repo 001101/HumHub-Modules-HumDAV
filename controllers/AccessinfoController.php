@@ -57,10 +57,12 @@ class AccessinfoController extends Controller {
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         $iCalCalendars = [];
-        if (Yii::$app->user->identity->isModuleEnabled('calendar'))
-            $iCalCalendars['0'] = 'Personal';
-        foreach (Membership::getUserSpaces(Yii::$app->user->identity->id) as $space)
-            $iCalCalendars['space_'.$space->id] = 'Space: '.$space->name;
+        if (Yii::$app->getModule('calendar') !== null) {
+            if (Yii::$app->user->identity->moduleManager->isEnabled('calendar'))
+                $iCalCalendars['0'] = 'Personal';
+            foreach (Membership::getUserSpaces(Yii::$app->user->identity->id) as $space)
+                $iCalCalendars['space_'.$space->id] = 'Space: '.$space->name;
+        }
 
         return $this->render('index', [
             'userSettingsModel' => $userSettingsForm,

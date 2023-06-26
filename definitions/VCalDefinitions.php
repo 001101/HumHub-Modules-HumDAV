@@ -41,14 +41,14 @@ class VCalDefinitions {
         $calendarEntries = [];
 
         if ($calendarId === '0') {
-            if (!$currentUser->isModuleEnabled('calendar')) return null;
+            if (!$currentUser->moduleManager->isEnabled('calendar')) return null;
             $calendarEntries = CalendarEntry::find()->contentContainer($currentUser)->all();
         }
         else if (str_starts_with($calendarId, 'space_')) {
             $spaceId = substr($calendarId, strpos($calendarId, '_') + 1);
             $space = Space::findOne(['id' => $spaceId]);
             if ($space === null) return null;
-            if (!$space->isModuleEnabled('calendar')) return null;
+            if (!$space->moduleManager->isEnabled('calendar')) return null;
             if (!$space->isMember($currentUser->id)) return null;
             $calendarEntries = CalendarEntry::find()->contentContainer($space)->readable($currentUser)->all();
         }

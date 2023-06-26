@@ -8,22 +8,16 @@
 
 namespace humhub\modules\humdav;
 
-use humhub\modules\humdav\controllers\AdminController;
 use Yii;
 use yii\helpers\Url;
+use yii\helpers\StringHelper;
 use humhub\modules\humdav\definitions\RouteDefinitions;
 use humhub\modules\humdav\models\UserToken;
 use humhub\modules\user\models\User;
 
 class Events {
-    public static function onBeforeModuleDisable($event) {
-        if ($event->moduleId === 'humdav') {
-            AdminController::restoreHtaccess();
-        }
-    }
-
     public static function onBeforeRequest($event) {
-        if (substr(Yii::$app->request->pathInfo, 0, 7) != 'humdav/') {
+        if (!StringHelper::startsWith(Yii::$app->request->pathInfo, 'humdav/')) {
             return;
         }
 

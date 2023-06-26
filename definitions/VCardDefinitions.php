@@ -78,19 +78,19 @@ class VCardDefinitions {
         }
 
         if ((boolean)$settings->get('include_phone_numbers', true) === true) {  // Add Phone numbers
-            if (!empty(str_replace(' ', '', $profile->phone_private))) {
+            if (!empty(str_replace(' ', '', $profile->phone_private ?? ""))) {
                 $phone = str_replace(' ', '', $profile->phone_private);
                 $vCard .= "TEL;type=HOME;type=VOICE:$phone\r\n";
             }
-            if (!empty(str_replace(' ', '', $profile->phone_work))) {
+            if (!empty(str_replace(' ', '', $profile->phone_work ?? ""))) {
                 $phone = str_replace(' ', '', $profile->phone_work);
                 $vCard .= "TEL;type=WORK;type=VOICE:$phone\r\n";
             }
-            if (!empty(str_replace(' ', '', $profile->mobile))) {
+            if (!empty(str_replace(' ', '', $profile->mobile ?? ""))) {
                 $phone = str_replace(' ', '', $profile->mobile);
                 $vCard .= "TEL;type=CELL;type=VOICE:$phone\r\n";
             }
-            if (!empty(str_replace(' ', '', $profile->fax))) {
+            if (!empty(str_replace(' ', '', $profile->fax ?? ""))) {
                 $phone = str_replace(' ', '', $profile->fax);
                 $vCard .= "TEL;type=HOME;TYPE=FAX:$phone\r\n";
             }

@@ -19,7 +19,6 @@ return [
     'class' => 'humhub\modules\humdav\Module',
     'namespace' => 'humhub\modules\humdav',
     'events' => [
-        [ModuleManager::class, ModuleManager::EVENT_BEFORE_MODULE_DISABLE, [Events::class, 'onBeforeModuleDisable']],
         [Application::class, Application::EVENT_BEFORE_REQUEST, [Events::class, 'onBeforeRequest']],
         [TopMenu::class, TopMenu::EVENT_INIT, [Events::class, 'onTopMenuInit']],
         [OnlineModuleManager::class, OnlineModuleManager::EVENT_AFTER_UPDATE, [Events::class, 'onAfterUpdate']],

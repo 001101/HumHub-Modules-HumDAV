@@ -1,7 +1,13 @@
 Changelog
 =========
 
-1.4.1 (Jun 01, 2022)
+1.5.0 (June 26, 2023)
+----------------------
+- Fix: Write protection for calendar objects.
+- Enh: Update Sabre/dav to 4.4.0
+- Chng: Remove the "Enable Auto Discovery" function, as it is no longer needed.
+
+1.4.1 (June 01, 2022)
 ----------------------
 - Fix: The payload version for the automatic configuration files for iOS and macOS was wrong.
 

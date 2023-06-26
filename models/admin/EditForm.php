@@ -8,7 +8,6 @@
 
 namespace humhub\modules\humdav\models\admin;
 
-use humhub\modules\humdav\controllers\AdminController;
 use Yii;
 use yii\base\Model;
 
@@ -26,7 +25,6 @@ class EditForm extends Model {
     public $include_url;
     public $enable_space_addressbooks;
     public $enable_browser_plugin;
-    public $enable_auto_discovery;
 
     /**
      * @inheritdocs
@@ -36,7 +34,7 @@ class EditForm extends Model {
             [['instruction_location'], 'in', 'range' => array_keys(static::getWidgetLocations())],
             [['instruction_location_sort_order'], 'number', 'min' => 0],
             [['active', 'enabled_users'], 'safe'],
-            [['enable_password_auth', 'include_address', 'include_profile_image', 'include_birthday', 'include_gender', 'include_phone_numbers', 'include_url', 'enable_space_addressbooks', 'enable_browser_plugin', 'enable_auto_discovery'], 'boolean'],
+            [['enable_password_auth', 'include_address', 'include_profile_image', 'include_birthday', 'include_gender', 'include_phone_numbers', 'include_url', 'enable_space_addressbooks', 'enable_browser_plugin'], 'boolean'],
             [['instruction_location_sort_order'], 'required']
         ];
     }
@@ -64,7 +62,6 @@ class EditForm extends Model {
         $this->enable_space_addressbooks = $settings->get('enable_space_addressbooks', true);
         
         $this->enable_browser_plugin = $settings->get('enable_browser_plugin', false);
-        $this->enable_auto_discovery = AdminController::getAutoDiscoveryStatus();
     }
 
     /**
@@ -86,16 +83,6 @@ class EditForm extends Model {
             'enabled_users' => 'If empty, all users have access.',
             'enable_password_auth' => 'The token authentication works independently of the authentication with the user password.'
         ];
-
-        if (AdminController::autoDiscoveryAvailable()) {
-            $result['enable_auto_discovery'] = '<b>IMPORTANT</b>: Please watch out for unexpected changes to the .htaccess file after an HumHub update. If errors occur, the current .htaccess file must be replaced with the <a href="https://github.com/humhub/humhub/blob/master/.htaccess.dist" target="_blank" ref="noopener noreferrer">current one from the official repo</a>.';
-        }
-        else if (!AdminController::autoDiscoveryReadable()) {
-            $result['enable_auto_discovery'] = 'The .htaccess file cannot be read. The current auto discovery status is unknown.';
-        }
-        else if (!AdminController::autoDiscoveryWriteable()) {
-            $result['enable_auto_discovery'] = 'The .htaccess file unfortunately can not be changed.';
-        }
 
         return $result;
     }
@@ -123,7 +110,6 @@ class EditForm extends Model {
         $settings->set('enable_space_addressbooks', (boolean) $this->enable_space_addressbooks);
         
         $settings->set('enable_browser_plugin', (boolean) $this->enable_browser_plugin);
-        AdminController::setAutoDiscoveryStatus((boolean) $this->enable_auto_discovery);
 
         return true;
     }

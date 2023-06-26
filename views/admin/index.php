@@ -48,13 +48,17 @@ use humhub\modules\humdav\models\admin\EditForm;
         <hr />
 
         <?= $form->field($model, 'enable_browser_plugin')->checkbox(); ?>
-        <?= $form->field($model, 'enable_auto_discovery')->checkbox(['disabled' => $auto_discovery_available !== true]); ?>
+
+        <span>Since HumHub version 1.13, the .htaccess file already contains all the necessary changes to enable automatic detection (.well-known redirects). Please make sure that the current .htaccess file is on the server and/or that the following redirects are configured and/or possible:</span>
+        <ul>
+            <li><?=Url::to(['/.well-known/carddav'], true)?> &rarr; <?=Url::to(['/humdav/remote'], true)?></li>
+            <li><?=Url::to(['/.well-known/caldav'], true)?> &rarr; <?=Url::to(['/humdav/remote'], true)?></li>
+        </ul>
 
         <hr />
 
         <?= Html::submitButton("Save", ['class' => 'btn btn-primary', 'data-ui-loader' => '']); ?>
         <a class="btn btn-default" href="<?= Url::to(['/admin/module']); ?>">Back to modules</a>
-        <a>This module is now available in the Marketplace.</a>
 
         <hr />
 

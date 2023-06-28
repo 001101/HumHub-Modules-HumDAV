@@ -23,6 +23,14 @@ class Events {
 
         Yii::$app->urlManager->addRules(RouteDefinitions::getDefinitions(), true);
     }
+    
+    public static function onBeforeAction($event) {
+        if (Yii::$app->request->pathInfo === '.well-known/carddav' || Yii::$app->request->pathInfo === '.well-known/caldav') {
+            Yii::$app->response->redirect('/humdav/remote')->send();
+            $event->handled = true;
+            die();
+        }
+    }
 
     public static function onTopMenuInit($event) {
         try {

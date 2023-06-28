@@ -117,7 +117,10 @@ class CardDavBackend extends AbstractBackend {
         }
 
         foreach ($usersForCards as $user) {
-            $results[] = VCardDefinitions::getVCardDefinition($user, $addressBookId, $currentUser);
+            $vCard = VCardDefinitions::getVCardDefinition($user, $addressBookId, $currentUser);
+            if ($vCard !== null) {
+                $results[] = $vCard;
+            }
         }
 
         return $results;

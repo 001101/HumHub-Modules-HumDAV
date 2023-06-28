@@ -14,6 +14,7 @@ use humhub\libs\ProfileImage;
 use humhub\modules\space\models\Membership;
 use humhub\modules\space\models\Space;
 use humhub\modules\user\models\Follow;
+use Sabre\VObject\Component\VCard;
 
 class VCardDefinitions {
     public static function getVCard(User $user, User $currentUser) {
@@ -21,93 +22,104 @@ class VCardDefinitions {
 
         $profile = $user->profile;
 
-        $vCard = "BEGIN:VCARD\r\n";
-        $vCard .= "VERSION:4.0\r\n";
-        $vCard .= "KIND:individual\r\n";
-        $vCard .= "UID:$user->guid\r\n";
-        $vCard .= "FN:$user->displayname\r\n";
-        $vCard .= "N:$profile->lastname;$profile->firstname;;;\r\n";
-        $vCard .= "EMAIL:$user->email\r\n";
+        $vCard = new VCard(['UID' => $user->guid, 'KIND' => 'individual']);
+        $vCard->convert(VCard::VCARD40);
+
+
+        $vCard->add('FN', $user->displayname);
+        $vCard->add('N', [
+            $profile->lastname,     // Family Names (also known as surnames)
+            $profile->firstname,    // Given Names
+            null,                   // Additional Names
+            null,                   // Honorific Prefixes
+            null                    // Honorific Suffixes
+        ]);
+        $vCard->add('EMAIL', $user->email);
+
 
         $categories = ['All Users'];
         if (Follow::findOne(['user_id' => $currentUser->id, 'object_model' => User::class, 'object_id' => $user->id]) !== null) {
             $categories[] = 'Following';
         }
         foreach (array_intersect(Membership::getUserSpaceIds($user->id), Membership::getUserSpaceIds($currentUser->id)) as $spaceId) {
-            $space = Space::findOne(['id' => $spaceId]);
-            $categories[] = str_replace(["\\", "\n", ",", ";"], ["\\\\", "\\n", "\\,", "\\;"], $space->name);
+            $categories[] = Space::findOne(['id' => $spaceId])->name;
         }
-        $vCard .= "CATEGORIES:" . implode(',', $categories) . "\r\n";
+        $vCard->add('CATEGORIES', $categories);
+
 
         if ((boolean)$settings->get('include_address', true) === true) {  // Adding Address
-            $vCard .= "ADR;TYPE=home:;;$profile->street;$profile->city;$profile->state;$profile->zip;$profile->country\r\n";
+            $vCard->add('ADR', [
+                null,               // post office box
+                null,               // extended address (e.g., apartment or suite number)
+                $profile->street,   // street address
+                $profile->city,     // locality (e.g., city)
+                $profile->state,    // region (e.g., state or province)
+                $profile->zip,      // postal code
+                $profile->country   // country name
+            ], ['TYPE' => 'home']);
         }
+
 
         if ((boolean)$settings->get('include_profile_image', true) === true) {  // Add Profile Image
             $profileImage = new ProfileImage($user->guid);
             if ($profileImage->hasImage()) {
-                $profileImageUrl = $profileImage->getUrl('', true);
-                $vCard .= "PHOTO:$profileImageUrl\r\n";
+                $vCard->add('PHOTO', $profileImage->getUrl('', true));
             }
         }
-        
+
+
+        if ((boolean)$settings->get('include_gender', true) === true) {  // Add Gender
+            if (!empty($profile->gender)) {
+                if ($profile->gender === 'male') $vCard->add('GENDER', 'M');
+                else if ($profile->gender === 'female') $vCard->add('GENDER', 'F');
+                else $vCard->add('GENDER', 'O');
+            }
+        }
+
+
         if ((boolean)$settings->get('include_birthday', true) === true) {  // Add Birthday
             if (!empty($profile->birthday)) {
-                $birthdayDatetime = date_create_from_format('Y-m-d', $profile->birthday);
-                $birthdayFormated = '';
-                if ($profile->birthday_hide_year === 1) {
-                    $birthdayFormated = $birthdayDatetime->format('--md');
-                }
-                else {
-                    $birthdayFormated = $birthdayDatetime->format('Ymd');
-                }
-                $vCard .= "BDAY:$birthdayFormated\r\n";
-            }
-        }
-        
-        if ((boolean)$settings->get('include_gender', true) === true) {  // Add Gender
-            if ($profile->gender === 'male') {
-                $vCard .= "GENDER:M\r\n";
-            }
-            else if ($profile->gender === 'female') {
-                $vCard .= "GENDER:F\r\n";
-            }
-            else {
-                $vCard .= "GENDER:O\r\n";
+                $bdayDateTime = date_create_from_format('Y-m-d', $profile->birthday);
+                $bdayFormated = $profile->birthday_hide_year ? $bdayDateTime->format('--md') : $bdayDateTime->format('Ymd');
+                $vCard->add('BDAY', $bdayFormated);
             }
         }
 
-        if ((boolean)$settings->get('include_phone_numbers', true) === true) {  // Add Phone numbers
-            if (!empty(str_replace(' ', '', $profile->phone_private ?? ""))) {
-                $phone = str_replace(' ', '', $profile->phone_private);
-                $vCard .= "TEL;type=HOME;type=VOICE:$phone\r\n";
-            }
-            if (!empty(str_replace(' ', '', $profile->phone_work ?? ""))) {
-                $phone = str_replace(' ', '', $profile->phone_work);
-                $vCard .= "TEL;type=WORK;type=VOICE:$phone\r\n";
-            }
-            if (!empty(str_replace(' ', '', $profile->mobile ?? ""))) {
-                $phone = str_replace(' ', '', $profile->mobile);
-                $vCard .= "TEL;type=CELL;type=VOICE:$phone\r\n";
-            }
-            if (!empty(str_replace(' ', '', $profile->fax ?? ""))) {
-                $phone = str_replace(' ', '', $profile->fax);
-                $vCard .= "TEL;type=HOME;TYPE=FAX:$phone\r\n";
-            }
-        }
-        
+
         if ((boolean)$settings->get('include_url', true) === true) {  // Add Url's
             if (!empty($profile->url)) {
-                $vCard .= "URL:$profile->url\r\n";
+                $vCard->add('URL', $profile->url);
             }
         }
 
-        $vCard .= "END:VCARD\r\n";
-        return $vCard;
+
+        if ((boolean)$settings->get('include_phone_numbers', true) === true) {  // Add Phone numbers
+            if (!empty(str_replace(' ', '', $profile->phone_private ?? ''))) {
+                $vCard->add('TEL', str_replace(' ', '', $profile->phone_private), ['TYPE' => ['home', 'voice']]);
+            }
+            if (!empty(str_replace(' ', '', $profile->phone_work ?? ''))) {
+                $vCard->add('TEL', str_replace(' ', '', $profile->phone_work), ['TYPE' => ['work', 'voice']]);
+            }
+            if (!empty(str_replace(' ', '', $profile->mobile ?? ''))) {
+                $vCard->add('TEL', str_replace(' ', '', $profile->mobile), ['TYPE' => ['cell', 'voice', 'text']]);
+            }
+            if (!empty(str_replace(' ', '', $profile->fax ?? ''))) {
+                $vCard->add('TEL', str_replace(' ', '', $profile->fax), ['TYPE' => ['home', 'fax']]);
+            }
+        }
+
+
+        $validationResults = $vCard->validate();
+        if (!empty($validationResults)) {
+            Yii::warning($validationResults, __METHOD__);
+            return null;
+        }
+        return $vCard->serialize();
     }
 
     public static function getVCardDefinition(User $user, $addressBookId, User $currentUser) {
         $vCard = self::getVCard($user, $currentUser);
+        if ($vCard === null) return null;
         return [
             'id' => $user->id,
             'uri' => $user->guid.'.vcf',

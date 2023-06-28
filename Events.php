@@ -77,21 +77,21 @@ class Events {
 
             $integrityController->showTestHeadline('HumHub DAV Access Module - Token (' . UserToken::find()->count() . ' entries)');
             foreach (UserToken::find()->joinWith(['user'])->each() as $userToken) {
-                if ($userToken->user == null) {
+                if ($userToken->user === null) {
                     if ($integrityController->showFix('Deleting token ' . $userToken->id . ' without existing user!')) {
                         $userToken->delete();
                         continue;
                     }
                 }
 
-                if ($userToken->user->status != User::STATUS_ENABLED) {
+                if ($userToken->user->status !== User::STATUS_ENABLED) {
                     if ($integrityController->showFix('Deleting token ' . $userToken->id . ' with disabled user!')) {
                         $userToken->delete();
                         continue;
                     }
                 }
 
-                if ($userToken->used_for == UserToken::USED_FOR_NOTHING) {
+                if ($userToken->used_for === UserToken::USED_FOR_NOTHING) {
                     if ($integrityController->showFix('Deleting disabled token ' . $userToken->id . '!')) {
                         $userToken->delete();
                         continue;

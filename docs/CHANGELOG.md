@@ -5,6 +5,7 @@ Changelog
 ----------------------
 - Fix: Write protection for calendar objects.
 - Enh: Update Sabre/dav to 4.4.0
+- Enh: Use Sabre/VObject to generate VCard
 - Chng: Remove the "Enable Auto Discovery" function, as it is no longer needed.
 
 1.4.1 (June 01, 2022)

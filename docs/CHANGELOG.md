@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.5.1 (June 29, 2023)
+----------------------
+- Fix: Error when calling mobileconfig if the server manages the files case sensitive.
+- Fix: On some systems, the inline script for generating the iCal address is rejected.
+
 1.5.0 (June 26, 2023)
 ----------------------
 - Fix: Write protection for calendar objects.

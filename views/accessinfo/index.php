@@ -6,6 +6,7 @@
  * @author KeudellCoding
  */
 
+use humhub\assets\JqueryKnobAsset;
 use humhub\libs\ActionColumn;
 use humhub\libs\Html;
 use humhub\modules\humdav\models\UserToken;
@@ -14,7 +15,7 @@ use humhub\widgets\Button;
 use humhub\widgets\GridView;
 use yii\helpers\Url;
 
-\humhub\assets\JqueryKnobAsset::register($this);
+JqueryKnobAsset::register($this);
 ?>
 
 <div class="container">
@@ -77,7 +78,8 @@ use yii\helpers\Url;
                                                 <?php if ($calendarActivated) { ?>
                                                     <hr>
 
-                                                    <dt>iCal Address for <?=Html::dropDownList('Addressbook', null, $iCalCalendars, ['id' => 'ical_addressbook_selector'])?> <?=Html::button('Get URL', ['onclick' => '$("#ical_addressbook_address").text($("#ical_addressbook_address").data("default-url").replace("[ADDRESSBOOK-ID]", $("#ical_addressbook_selector").val()))'])?>:</dt>
+                                                    <dt>iCal Address for <?=Html::dropDownList('Addressbook', null, $iCalCalendars, ['id' => 'ical_addressbook_selector'])?>
+                                                    <?=Html::button('Get URL', ['id' => 'ical_addressbook_button'])?>:</dt>
                                                     <dd id='ical_addressbook_address' data-default-url="<?=Url::to(['/humdav/remote/ical/'.Yii::$app->user->identity->guid.'/[ADDRESSBOOK-ID]/[ICAL-TOKEN]'], true)?>"></dd>
                                                 <?php } ?>
                                             </dl>
@@ -169,3 +171,13 @@ use yii\helpers\Url;
         </div>
     </div>
 </div>
+
+<script <?= Html::nonce() ?>>
+    $(document).ready(function() {
+        var defaultUrl = $("#ical_addressbook_address").data("default-url");
+        $('#ical_addressbook_button').click(function() {
+            var url = defaultUrl.replace("[ADDRESSBOOK-ID]", $("#ical_addressbook_selector").val());
+            $("#ical_addressbook_address").text(url);
+        });
+    });
+</script>

@@ -8,7 +8,6 @@
 
 use humhub\commands\IntegrityController;
 use humhub\components\Application;
-use humhub\components\ModuleManager;
 use humhub\modules\humdav\Events;
 use humhub\modules\marketplace\components\OnlineModuleManager;
 use humhub\modules\user\models\User;
